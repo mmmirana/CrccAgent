@@ -1,0 +1,16 @@
+<h1>{{title}}</h1>
+<p>Welcome to {{title}}</p>
+
+<form action="{{ctx}}/common/upload" method="post" enctype="multipart/form-data">
+    <input type="file" name="xfile">
+    <input type="submit" value="上传">
+</form>
+
+<a href="{{ctx}}/common/download?filename=你好.png">下载</a>
+
+<script src="{{ctx}}/web/static/js/jquery-3.3.1.min.js"></script>
+<script>
+    $().ready(function () {
+        console.log('jquery ready');
+    })
+</script>

@@ -2,12 +2,14 @@ const router = require('koa-router')()
 
 router.prefix('/crcc')
 
-router.get('/', function (ctx, next) {
-    ctx.render('index', {title: 'crccTest'});
-})
-
-router.get('/x', function (ctx, next) {
-    ctx.render('index.hbs', {title: 'crccTest'});
-})
+/**
+ * 到达crcc首页
+ */
+router.get('/', async function (ctx, next) {
+    await ctx.redirect('crcc/index');
+});
+router.get('/index', async function (ctx, next) {
+    await ctx.render('crcc/index', {title: 'crccTest'});
+});
 
 module.exports = router

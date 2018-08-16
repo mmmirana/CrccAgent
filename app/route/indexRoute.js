@@ -16,4 +16,13 @@ router.get('/json', async (ctx, next) => {
     }
 })
 
+/**
+ * 渲染hbs
+ */
+router.get('/hbs', async (ctx, next) => {
+    await ctx.render('index', {
+        title: 'hbs test'
+    })
+})
+
 module.exports = router
