@@ -4,6 +4,7 @@
 
 const path = require('path');
 const router = require('koa-router')();
+const sendfile = require('koa-sendfile');// 文件下载
 
 const appcfg = require('../_config/appcfg');
 const fileutils = require('../_utils/FileUtils');
@@ -11,7 +12,7 @@ const fileutils = require('../_utils/FileUtils');
 router.prefix('/common');
 
 /**
- * 文件上传
+ * 文件上传，post
  */
 router.post('/upload', async (ctx, next) => {
     // 上传单个文件
@@ -23,8 +24,8 @@ router.post('/upload', async (ctx, next) => {
     } else {
         // 上传单个文件
         try {
-            fileutils.upload(xfile, midpath);
-            return ctx.body = "上传成功！";
+            let filepath = fileutils.upload(xfile, midpath);
+            return ctx.body = "上传成功！" + `filepath: ${filepath}`;
         } catch (e) {
             return ctx.body = "上传失败！";
         }
@@ -32,22 +33,20 @@ router.post('/upload', async (ctx, next) => {
 });
 
 /**
- * 文件下载，get和post均可
+ * 文件下载，get
  */
 router.get('/download', async function downloadFile(ctx, next) {
 
-    let midpath = ctx.params.midpath || "";// 中间路径，类似于模块名
-    let filename = ctx.params.filename;// 文件名称
+    let midpath = ctx.query.midpath || "";// 中间路径，类似于模块名
+    let filename = ctx.query.filename;// 文件名称
     let filepath = path.resolve(appcfg.upload.rootpath, midpath, filename);// 文件服务器路径
 
     if (fileutils.existFile(filepath)) {
-        // 设置下载的文件名称
-        let downloadFilename = new Date().getTime() + fileutils.getSuffix(filename);
-        ctx.set('Content-disposition', 'attachment;filename=' + downloadFilename);
-        let buffer = fileutils.readBuffer(filepath);
-        ctx.body = buffer;
+        ctx.attachment(decodeURI(filepath));
+        await sendfile(ctx, filepath);
+
     } else {
-        ctx.json = '抱歉，文件不存在或路径有误！';
+        ctx.body = '抱歉，文件不存在或路径有误！';
     }
 });
 

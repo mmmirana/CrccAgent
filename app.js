@@ -4,6 +4,7 @@ const app = new Koa()
 const views = require('koa-views')
 const json = require('koa-json')
 const onerror = require('koa-onerror')
+const koaBody = require('koa-body')
 const bodyparser = require('koa-bodyparser')
 const logger = require('koa-logger')
 
@@ -21,10 +22,23 @@ const routermap = require('./app/_config/routermap');
 // error handler
 onerror(app)
 
+
+/**
+ * koa2 文件上传配置，需要放在bodyParser之前，否则接收不到POST请求
+ * @type {((options?: koaBody.IKoaBodyOptions) => Koa.Middleware) | koaBody}
+ */
+app.use(koaBody({
+    multipart: true,
+    formidable: {
+        maxFileSize: 1024 * 1024 * 10  // 设置上传文件大小最大限制，默认 10M
+    }
+}));
+
 // middlewares
 app.use(bodyparser({
     enableTypes: ['json', 'form', 'text']
 }))
+
 app.use(json())
 app.use(logger())
 
@@ -50,26 +64,8 @@ app.use(async (ctx, next) => {
     // 声明全局变量
     ctx.state = Object.assign(ctx.state, {ctx: appcfg.pro_ctx});
 
-    // 绑定get和post的变量到params
-    let params = {};
-    params = Object.assign(params, ctx.request.query);
-    params = Object.assign(params, ctx.request.body);
-    ctx.params = params;
-
     await next();
 })
-
-/**
- * koa2 文件上传配置
- * @type {((options?: koaBody.IKoaBodyOptions) => Koa.Middleware) | koaBody}
- */
-const koaBody = require('koa-body');
-app.use(koaBody({
-    multipart: true,
-    formidable: {
-        maxFileSize: 1024 * 1024 * 10  // 设置上传文件大小最大限制，默认 10M
-    }
-}));
 
 // 初始化路由
 routermap.init(app);

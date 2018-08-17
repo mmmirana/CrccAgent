@@ -3,14 +3,44 @@
 
 <form action="{{ctx}}/common/upload" method="post" enctype="multipart/form-data">
     <input type="file" name="xfile">
+    <input type="midpath" name="midpath">
     <input type="submit" value="上传">
 </form>
 
-<a href="{{ctx}}/common/download?filename=你好.png">下载</a>
+<input id="midpath" name="midpath" value="midpath">
+<input id="filename" name="filename" value="filename">
+<a href="javascript:void(0)" onclick="downloadFile()">下载</a>
+
+<button onclick="testLogin()">测试Post登录</button>
 
 <script src="{{ctx}}/web/static/js/jquery-3.3.1.min.js"></script>
 <script>
     $().ready(function () {
         console.log('jquery ready');
+
     })
+
+    function downloadFile() {
+        let midpath = $("#midpath").val();
+        let filename = $("#filename").val();
+        window.location.href = `{{ctx}}/common/download?midpath=${midpath}&filename=${filename}`;
+    }
+
+    // 测试Post登录
+    function testLogin() {
+        $.ajax({
+            type: 'post',
+            url: 'http://localhost:3000/crcc/login',
+            data: {
+                name: 'wangzf',
+                pwd: '123456'
+            },
+            success: function (data) {
+                console.log(data);
+            },
+            error: function () {
+                console.log('error');
+            }
+        })
+    }
 </script>

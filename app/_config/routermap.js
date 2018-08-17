@@ -7,7 +7,7 @@ let routerMap = {};
 
 routerMap.init = function (app) {
     // routes
-    // app.use(index.routes(), index.allowedMethods());
+    app.use(index.routes(), index.allowedMethods());
     // app.use(users.routes(), users.allowedMethods());
     app.use(crcc.routes(), crcc.allowedMethods());
     app.use(common.routes(), common.allowedMethods());
