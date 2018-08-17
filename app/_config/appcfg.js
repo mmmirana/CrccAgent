@@ -16,12 +16,13 @@ let cfg = {
 
     // 静态资源文件相对项目根目录，
     resource: {
-        rootpath: 'web/static/'
+        rootpath: 'web/static/',
     },
 
     // hbs视图相对项目根路径
     view: {
-        rootpath: 'web/views/'
+        rootpath: 'web/views/',
+        partialsPath: 'web/views/partials/',
     },
 
     // 文件上传根目录
