@@ -1,5 +1,4 @@
 const router = require('koa-router')();
-const koaBody = require('koa-body');
 
 router.prefix('/crcc');
 
@@ -11,21 +10,28 @@ router
         await ctx.redirect('/crcc/index');
     })
     // 使用默认layout
+    .get('/index', async function (ctx, next) {
+        await ctx.render('crcc/index', {title: 'crccIndex'});
+    })
+    // 使用默认layout
     .get('/layout', async function (ctx, next) {
-        await ctx.render('crcc/index', {title: 'crccTest'});
+        await ctx.render('crcc/index', {title: 'layout'});
     })
     // 使用其他layout
     .get('/layout2', async function (ctx, next) {
-        await ctx.render('crcc/index', {layout: 'layout2', title: 'crccTest2'})
+        await ctx.render('crcc/index', {layout: 'layout2', title: 'layout2'})
     })
     // 登录请求get
     .get('/login', async function (ctx, next) {
-        ctx.body = 'get login';
+        await ctx.render('crcc/login')
     })
     // 登录请求post
-    .post('/login', function (ctx, next) {
+    .post('/login', async function (ctx, next) {
         console.log('invoke crcc/login');
-        ctx.body = 'post login';
+
+        console.log('login,params', ctx.parameters);
+
+        await ctx.redirect('/crcc/index');
     });
 
 

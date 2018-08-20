@@ -1,0 +1,19 @@
+<h1>{{title}}</h1>
+<p>Welcome to {{title}}</p>
+
+<form action="{{ctx}}/crcc/login?type=xxx" method="post" enctype="application/x-www-form-urlencoded">
+    <div>
+        账户：<input type="text" name="username">
+    </div>
+    <div>
+        密码：<input type="text" name="password">
+    </div>
+    <input type="submit" value="登录">
+</form>
+
+<script src="{{ctx}}/web/static/js/jquery-3.3.1.min.js"></script>
+<script>
+    $().ready(function () {
+        console.log('jquery ready');
+    })
+</script>
