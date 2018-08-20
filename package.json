@@ -9,6 +9,7 @@
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"dependencies": {
+		"app-root-path": "^2.1.0",
 		"co": "^4.6.0",
 		"debug": "^2.6.3",
 		"handlebars": "~4.0.5",
