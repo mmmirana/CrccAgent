@@ -1,0 +1,29 @@
+<h1>{{title}}</h1>
+<p>Welcome to {{title}}</p>
+
+<button onclick="getAccessToken()">获取AccessToken</button>
+<button onclick="getAccessToken()">获取AccessToken</button>
+
+<script src="{{ctx}}/web/static/js/jquery-3.3.1.min.js"></script>
+<script>
+    $().ready(function () {
+        console.log('jquery ready');
+
+    })
+
+    /**
+     * 获取AccessToken
+     */
+    function getAccessToken() {
+        $.ajax({
+            type: 'post',
+            url: 'http://localhost:3000/baiduAI/getAccessToken',
+            success: function (data) {
+                console.log(data);
+            },
+            error: function () {
+                console.log('error');
+            }
+        })
+    }
+</script>

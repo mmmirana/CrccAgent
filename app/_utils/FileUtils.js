@@ -55,6 +55,15 @@ FileUtils.getSuffix = function (filename) {
 }
 
 /**
+ * 获取文件或者文件夹的上级文件夹
+ * @param filepath
+ * @returns {string}
+ */
+FileUtils.getDirname = function (filepath) {
+    return path.dirname(filepath);
+}
+
+/**
  * 判断文件或文件夹是否存在
  * @param filepath
  * @returns {boolean}
@@ -103,7 +112,7 @@ FileUtils.mkdirs = function (dirpath) {
     if (fs.existsSync(dirpath)) {
         return true;
     } else {
-        if (this.mkdirs(path.dirname(dirpath))) {
+        if (this.mkdirs(this.getDirname(dirpath))) {
             fs.mkdirSync(dirpath);
             return true;
         }
@@ -121,17 +130,13 @@ FileUtils.upload = function (xfile, midpath) {
     // 源文件
     let fromFilename = xfile.name;
 
-    // 当前时间毫秒数
-    let timemills = new Date().getTime();
-    // 5位随机码
-    let randomStr = randomUtils.generateRandom(5, randomUtils.randomType.number + randomUtils.randomType.letterLower);
-    // 目标文件名称规则：文件前缀+'_'+时间戳+5位随机码+文件后缀
-    let toFilename = FileUtils.getPreffix(fromFilename) + '_' + timemills + randomStr + FileUtils.getSuffix(fromFilename);
+    // 生成新的文件名
+    let toFilename = FileUtils.newFilename(fromFilename);
 
     // 目标文件绝对路径
     let filePath = path.resolve(appcfg.upload.rootpath, midpath, toFilename);
     // 如果上级目录不存在，则创建
-    FileUtils.mkdirs(path.dirname(filePath));
+    FileUtils.mkdirs(this.getDirname(filePath));
 
     // 传输文件
     const reader = fs.createReadStream(xfile.path);
@@ -140,6 +145,21 @@ FileUtils.upload = function (xfile, midpath) {
 
     // 返回目标文件的地址
     return filePath;
+}
+
+/**
+ * 根据原文件名生成新的文件名
+ * @param fromFilename
+ * @returns {string}
+ */
+FileUtils.newFilename = function (fromFilename) {
+    // 当前时间毫秒数
+    let timemills = new Date().getTime();
+    // 5位随机码
+    let randomStr = randomUtils.generateRandom(5, randomUtils.randomType.number + randomUtils.randomType.letterLower);
+    // 目标文件名称规则：文件前缀+'_'+时间戳+5位随机码+文件后缀
+    let toFilename = FileUtils.getPreffix(fromFilename) + '_' + timemills + '_' + randomStr + FileUtils.getSuffix(fromFilename);
+    return toFilename;
 }
 
 /**
