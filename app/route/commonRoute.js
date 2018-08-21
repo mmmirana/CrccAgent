@@ -7,7 +7,10 @@ const router = require('koa-router')();
 const sendfile = require('koa-sendfile');// 文件下载
 
 const appcfg = require('../_config/appcfg');
-const fileutils = require('../_utils/FileUtils');
+const FileUtils = require('../_utils/FileUtils');
+
+const ResultUtils = require('../_utils/ResultUtils');
+const BaiduAIUtils = require('../_utils/BaiduAIUtils');
 
 router.prefix('/common');
 
@@ -20,15 +23,36 @@ router.post('/upload', async (ctx, next) => {
     const midpath = ctx.request.body.midpath || "";// 中间路径，类似于模块名
 
     if (!xfile) {
-        return ctx.body = "找不到name='xfile'的文件！";
+        return ctx.body = ResultUtils.errorMsg("无法匹配name='xfile'的文件！");
     } else {
         // 上传单个文件
         try {
-            let filepath = fileutils.upload(xfile, midpath);
-            return ctx.body = "上传成功！" + `filepath: ${filepath}`;
+            let uploadResult = FileUtils.upload(xfile, midpath);
+            return ctx.body = ResultUtils.successData(uploadResult);
         } catch (e) {
-            return ctx.body = "上传失败！";
+            return ctx.body = ResultUtils.errorMsg("上传失败");
         }
+    }
+});
+
+/**
+ * 上传Base64图片，post
+ */
+router.post('/uploadBase64Img', async (ctx, next) => {
+
+    //接收前台POST过来的base64
+    let base64Img = ctx.parameters.base64Img;
+    let midpath = ctx.parameters.midpath || '';
+
+    if (!base64Img) {
+        return ctx.body = ResultUtils.errorMsg("无法匹配name='base64Img'的数据");
+    }
+    // 上传单个文件
+    try {
+        let uploadResult = FileUtils.uploadBase64Img(base64Img, midpath);
+        return ctx.body = ResultUtils.successData(uploadResult);
+    } catch (e) {
+        return ctx.body = ResultUtils.errorMsg("上传失败");
     }
 });
 
@@ -39,14 +63,32 @@ router.get('/download', async function downloadFile(ctx, next) {
 
     let midpath = ctx.query.midpath || "";// 中间路径，类似于模块名
     let filename = ctx.query.filename;// 文件名称
-    let filepath = path.resolve(appcfg.base_cfg.upload.rootpath, midpath, filename);// 文件服务器路径
+    let filepath = path.join(appcfg.base_cfg.upload.rootpath, midpath, filename);// 文件服务器路径
 
-    if (fileutils.existFile(filepath)) {
+    if (FileUtils.existFile(filepath)) {
         ctx.attachment(decodeURI(filepath));
         await sendfile(ctx, filepath);
-
     } else {
-        ctx.body = '抱歉，文件不存在或路径有误！';
+        ctx.body = ResultUtils.errorMsg('抱歉，文件不存在或路径有误！');
+    }
+});
+
+/**
+ * 解析图片验证码
+ */
+router.post('/resolveCode', async function downloadFile(ctx, next) {
+    try {
+        //接收前台POST过来的base64
+        let base64Img = ctx.parameters.base64Img;
+        if (!base64Img) {
+            return ctx.body = ResultUtils.errorMsg("无法匹配name='base64Img'的数据");
+        }
+        let uploadResult = FileUtils.uploadBase64Img(base64Img, '');
+        let uploadImgpath = uploadResult.filepath;
+        let text = await BaiduAIUtils.recognize(uploadImgpath);
+        return ctx.body = ResultUtils.successData(text);
+    } catch (e) {
+        return ctx.body = ResultUtils.errorMsg('解析验证码异常，' + e.toString());
     }
 });
 

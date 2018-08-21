@@ -65,12 +65,4 @@ BaiduAIUtils.recognize = async function (imagepath) {
     return resutText.replace(/\s/, '');
 }
 
-BaiduAIUtils.recognize('E:\\workspace\\Webstrom_workspace\\crccPlugin\\test\\image.jpgs')
-    .then(function (data) {
-        console.log(data);
-    })
-    .catch(function (err) {
-        console.log(err);
-    });
-
 module.exports = BaiduAIUtils;

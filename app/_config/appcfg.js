@@ -27,13 +27,11 @@ let cfg = {
         },
         // 文件上传根目录
         upload: {
-            // E:\\workspace\\Webstrom_workspace\\crccPlugin\\web\\_upload
-            rootpath: path.resolve(pro_rootpath, "web/_upload")
+            rootpath: "web/_upload"
         },
         // 文件下载根目录
         download: {
-            // E:\\workspace\\Webstrom_workspace\\crccPlugin\\web\\_download
-            rootpath: path.resolve(pro_rootpath, "web/_download")
+            rootpath: "web/_download"
         },
         // 缓存文件目录
         temp: {

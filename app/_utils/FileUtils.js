@@ -124,7 +124,7 @@ FileUtils.mkdirs = function (dirpath) {
  * 上传文件
  * @param xfile ctx.request.files.xfile
  * @param midpath 中间路径
- * @returns {string} 上传成功，返回上传到服务器的地址
+ * @returns {{filename: string, filepath: string}}
  */
 FileUtils.upload = function (xfile, midpath) {
     // 源文件
@@ -134,17 +134,45 @@ FileUtils.upload = function (xfile, midpath) {
     let toFilename = FileUtils.newFilename(fromFilename);
 
     // 目标文件绝对路径
-    let filePath = path.resolve(appcfg.base_cfg.upload.rootpath, midpath, toFilename);
+    let toFilepath = path.join(appcfg.base_cfg.upload.rootpath, midpath, toFilename);
     // 如果上级目录不存在，则创建
-    FileUtils.mkdirs(this.getDirname(filePath));
+    FileUtils.mkdirs(this.getDirname(toFilepath));
 
     // 传输文件
     const reader = fs.createReadStream(xfile.path);
-    const upStream = fs.createWriteStream(filePath);
+    const upStream = fs.createWriteStream(toFilepath);
     reader.pipe(upStream);
 
     // 返回目标文件的地址
-    return filePath;
+    return {
+        filename: toFilename,
+        filepath: toFilepath,
+    };
+}
+
+FileUtils.uploadBase64Img = function (base64Img, midpath) {
+    // 获取文件后缀
+    let suffix = '.' + base64Img.match(/\w+(?=;base64)/g)[0];
+
+    // 重新生成文件名
+    let toFilename = this.generateNewFilename(suffix);
+
+    //过滤data:URL
+    base64Img = base64Img.replace(/^data:image\/\w+;base64,/, "");
+    let dataBuffer = new Buffer(base64Img, 'base64');
+
+    let toFilepath = path.join(appcfg.base_cfg.upload.rootpath, midpath, toFilename);
+
+    // 如果上级目录不存在，则创建
+    FileUtils.mkdirs(this.getDirname(toFilepath));
+
+    fs.writeFileSync(toFilepath, dataBuffer);
+
+    // 返回目标文件的地址
+    return {
+        filename: toFilename,
+        filepath: toFilepath,
+    };
 }
 
 /**
@@ -159,6 +187,21 @@ FileUtils.newFilename = function (fromFilename) {
     let randomStr = randomUtils.generateRandom(5, randomUtils.randomType.number + randomUtils.randomType.letterLower);
     // 目标文件名称规则：文件前缀+'_'+时间戳+5位随机码+文件后缀
     let toFilename = FileUtils.getPreffix(fromFilename) + '_' + timemills + '_' + randomStr + FileUtils.getSuffix(fromFilename);
+    return toFilename;
+}
+
+/**
+ * 根据文件后缀生成新的文件名
+ * @param suffix 文件后缀 eg: '.txt'
+ * @returns {string}
+ */
+FileUtils.generateNewFilename = function (suffix) {
+    // 当前时间毫秒数
+    let timemills = new Date().getTime();
+    // 5位随机码
+    let randomStr = randomUtils.generateRandom(5, randomUtils.randomType.number + randomUtils.randomType.letterLower);
+    // 目标文件名称规则：文件前缀+'_'+时间戳+5位随机码+文件后缀
+    let toFilename = timemills + '_' + randomStr + FileUtils.getSuffix(suffix);
     return toFilename;
 }
 
