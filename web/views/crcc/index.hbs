@@ -30,7 +30,7 @@
     function testLogin() {
         $.ajax({
             type: 'post',
-            url: 'http://localhost:3000/crcc/login',
+            url: '{{ctx}}/crcc/login',
             data: {
                 name: 'wangzf',
                 pwd: '123456'

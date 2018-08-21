@@ -39,7 +39,7 @@ router.get('/download', async function downloadFile(ctx, next) {
 
     let midpath = ctx.query.midpath || "";// 中间路径，类似于模块名
     let filename = ctx.query.filename;// 文件名称
-    let filepath = path.resolve(appcfg.upload.rootpath, midpath, filename);// 文件服务器路径
+    let filepath = path.resolve(appcfg.base_cfg.upload.rootpath, midpath, filename);// 文件服务器路径
 
     if (fileutils.existFile(filepath)) {
         ctx.attachment(decodeURI(filepath));

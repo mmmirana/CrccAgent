@@ -36,8 +36,8 @@ app.use(require('koa-static')(path.resolve(__dirname)));
 app.use(convert(hbs.middleware({
     extname: '.hbs',// 文件扩展名
     defaultLayout: 'layout',// 默认的layout名称，默认layout
-    viewPath: path.resolve(__dirname, appcfg.view.rootpath),// 视图根节点
-    partialsPath: path.resolve(__dirname, appcfg.view.partialsPath),// 分区路径
+    viewPath: path.resolve(__dirname, appcfg.base_cfg.view.rootpath),// 视图根节点
+    partialsPath: path.resolve(__dirname, appcfg.base_cfg.view.partialsPath),// 分区路径
     disableCache: true,// 禁止模板缓存。默认为false
 })));
 app.use(async (ctx, next) => {

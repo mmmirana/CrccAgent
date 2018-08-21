@@ -7,7 +7,7 @@ const ImageUtils = require('./ImageUtils');
 let BaiduAIUtils = {};
 
 /**
- * 获取client
+ * 获取AiOrcClient
  * @returns {*}
  */
 BaiduAIUtils.getAipOcrClient = function () {
@@ -27,28 +27,32 @@ BaiduAIUtils.getAipOcrClient = function () {
 
 /**
  * 调用通用文字识别, 图片参数为本地图片
- * @param imagepath
+ * @param imagepath 图片绝对路径
  * @returns {Promise<any>}
  */
 BaiduAIUtils.generalBasic = function (imagepath) {
     return new Promise(async function (resolve, reject) {
-        let client = BaiduAIUtils.getAipOcrClient();
-        let toImgPath = await ImageUtils.processImg(imagepath);
-        let image = fs.readFileSync(toImgPath).toString("base64");
-        client.generalBasic(image).then(function (result) {
-            // console.log(result.words_result[0].words.replace(/\s/, ""));// 去掉所有空格
-            // console.log(JSON.stringify(result));
-            resolve(result.words_result);
-        }).catch(function (err) {
-            // 如果发生网络错误
-            reject(err);
-        });
+        try {
+            let client = BaiduAIUtils.getAipOcrClient();
+            let toImgPath = await ImageUtils.processImg(imagepath);
+            let image = fs.readFileSync(toImgPath).toString("base64");
+            client.generalBasic(image).then(function (result) {
+                // console.log(result.words_result[0].words.replace(/\s/, ""));// 去掉所有空格
+                // console.log(JSON.stringify(result));
+                resolve(result.words_result);
+            }).catch(function (err) {
+                // 如果发生网络错误
+                reject(err);
+            });
+        } catch (e) {
+            reject(e);
+        }
     })
 };
 
 /**
  * 识别所有文字到一行
- * @param imagepath
+ * @param imagepath 路片绝对路径
  * @returns {Promise<string>}
  */
 BaiduAIUtils.recognize = async function (imagepath) {
@@ -60,5 +64,13 @@ BaiduAIUtils.recognize = async function (imagepath) {
     }
     return resutText.replace(/\s/, '');
 }
+
+BaiduAIUtils.recognize('E:\\workspace\\Webstrom_workspace\\crccPlugin\\test\\image.jpgs')
+    .then(function (data) {
+        console.log(data);
+    })
+    .catch(function (err) {
+        console.log(err);
+    });
 
 module.exports = BaiduAIUtils;

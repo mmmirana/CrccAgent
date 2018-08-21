@@ -16,7 +16,7 @@ ImageUtils.processImg = function (fromImgPath, options) {
     let colorspace = options.colorspace || 'gray';
     let threshold = options.threshold || '50%';
     let fromImageName = FileUtils.getFileName(fromImgPath);
-    let toFilepath = path.join(appcfg.temp.rootpath, "_ImageMagick", FileUtils.newFilename(fromImageName));
+    let toFilepath = path.join(appcfg.base_cfg.temp.rootpath, "_ImageMagick", FileUtils.newFilename(fromImageName));
     FileUtils.mkdirs(FileUtils.getDirname(toFilepath));
 
     return new Promise((resolve, reject) => {
@@ -25,8 +25,7 @@ ImageUtils.processImg = function (fromImgPath, options) {
             .normalize()
             .threshold(threshold)
             .write(toFilepath, function (err) {
-                if (err)
-                    return reject(err);
+                if (err) reject(err);
                 resolve(toFilepath);
             });
     });

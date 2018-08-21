@@ -134,7 +134,7 @@ FileUtils.upload = function (xfile, midpath) {
     let toFilename = FileUtils.newFilename(fromFilename);
 
     // 目标文件绝对路径
-    let filePath = path.resolve(appcfg.upload.rootpath, midpath, toFilename);
+    let filePath = path.resolve(appcfg.base_cfg.upload.rootpath, midpath, toFilename);
     // 如果上级目录不存在，则创建
     FileUtils.mkdirs(this.getDirname(filePath));
 
