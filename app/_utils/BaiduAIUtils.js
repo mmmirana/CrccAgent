@@ -61,15 +61,4 @@ BaiduAIUtils.recognize = async function (imagepath) {
     return resutText.replace(/\s/, '');
 }
 
-
-async function test() {
-    let result = await BaiduAIUtils.recognize('E:\\workspace\\Webstrom_workspace\\crccPlugin\\test\\image.jpg');
-    console.log(JSON.stringify(result));
-    result = await BaiduAIUtils.recognize('E:\\workspace\\Webstrom_workspace\\crccPlugin\\test\\image.png');
-    console.log(JSON.stringify(result));
-}
-
-test()
-
-
 module.exports = BaiduAIUtils;

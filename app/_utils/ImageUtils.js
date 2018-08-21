@@ -8,8 +8,7 @@ let ImageUtils = {};
 /**
  * 获取处理后的图片路径
  * @param fromImgPath 图片原路径
- * @param colorspace 过滤的颜色
- * @param threshold 临界值
+ * @param options 选项
  * @returns {Promise<any>}
  */
 ImageUtils.processImg = function (fromImgPath, options) {

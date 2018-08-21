@@ -48,7 +48,7 @@ RandomUtils.generateRandom = function (length, type) {
 
 /**
  * 生成固定长度的随机数字字符串
- * @param length
+ * @param length 长度
  */
 RandomUtils.generateNumberStr = function (length) {
     return this.generateRandom(length, this.randomType.number);
@@ -56,7 +56,7 @@ RandomUtils.generateNumberStr = function (length) {
 
 /**
  * 获取固定长度的随机小写字母的字符串
- * @param legnth
+ * @param length 长度
  * @returns {string}
  */
 RandomUtils.generateLowerLetter = function (length) {
@@ -65,7 +65,7 @@ RandomUtils.generateLowerLetter = function (length) {
 
 /**
  * 获取固定长度的随机小写字母的字符串
- * @param legnth
+ * @param length 长度
  * @returns {string}
  */
 RandomUtils.generateUpperLetter = function (length) {
@@ -74,7 +74,7 @@ RandomUtils.generateUpperLetter = function (length) {
 
 /**
  * 获取固定长度的随机字母的字符串
- * @param legnth
+ * @param length 长度
  * @returns {string}
  */
 RandomUtils.generateLetter = function (length) {
@@ -83,7 +83,7 @@ RandomUtils.generateLetter = function (length) {
 
 /**
  * 生成固定长度的随机字符串，字母+数字
- * @param length
+ * @param length 长度
  * @returns {string}
  */
 RandomUtils.generateLetterAndNumber = function (length) {
