@@ -12,7 +12,7 @@ let FileUtils = {}
  * @returns {*}
  */
 FileUtils.getFileName = function (filepath) {
-    filepath = filepath.replace('//', '\\');
+    filepath = filepath.replace(/\/{1,2}/g, '\\');
     let lastSpeatorIndex = filepath.lastIndexOf('\\');
 
     let filename = filepath;
