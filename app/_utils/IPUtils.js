@@ -7,10 +7,9 @@ let IPUtils = {};
  * @returns {*|string|string}
  */
 IPUtils.getClientIP = function (req) {
-    let ip = req.headers['x-forwarded-for'] ||
-        req.connection.remoteAddress ||
-        req.socket.remoteAddress ||
-        req.connection.socket.remoteAddress;
+    let ip = req.headers['X-Real-IP'] ||
+        req.headers['x-forwarded-for'] ||
+        req.connection.remoteAddress || '';
 
     if (ip.split(',').length > 0) {
         ip = ip.split(',')[0]
@@ -18,14 +17,20 @@ IPUtils.getClientIP = function (req) {
     return ip;
 };
 
+
 /**
  * 获取客户端ip信息
  * @param req
- * @returns {Promise<any>}
+ * @returns {Promise<object>}
  */
 IPUtils.getIPinfo = async function (req) {
-    let ipinfo = await HttpUtils.get('http://ip.taobao.com/service/getIpInfo.php', {ip: this.getClientIP(req)});
-    return ipinfo;
+    let ip = this.getClientIP(req);
+    if (ip) {
+        let ipinfo = await HttpUtils.get('http://ip.taobao.com/service/getIpInfo.php', {ip: ip});
+        return ipinfo;
+    } else {
+        return '';
+    }
 }
 
 module.exports = IPUtils;

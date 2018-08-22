@@ -35,9 +35,11 @@ async function attachParameters(ctx) {
 async function logIPAddr(ctx) {
     // 获取客户端的ip地址
     let ipAddr = await IPUtils.getClientIP(ctx.req);
-    let ipinfo = await IPUtils.getIPinfo(ctx.req);
     console.log(ipAddr);
-    console.log(JSON.stringify(ipinfo));
+
+    // 获取客户端ip信息
+    // let ipinfo = await IPUtils.getIPinfo(ctx.req);
+    // console.log(JSON.stringify(ipinfo));
 }
 
 module.exports = appmiddleware;
