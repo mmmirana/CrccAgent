@@ -12,6 +12,7 @@ const logger = require('koa-logger')
 
 // 项目配置信息
 const appcfg = require('./app/_config/appcfg');
+const appmiddleware = require('./app/_config/appmiddleware');
 
 // error handler
 onerror(app)
@@ -60,19 +61,8 @@ app.use(async (ctx, next) => {
     console.log(`${ctx.method} ${ctx.url} - ${ms}ms`)
 })
 
-// ctx, request params
-app.use(async (ctx, next) => {
-    // 声明全局变量
-    ctx.state = Object.assign(ctx.state, {ctx: appcfg.pro_ctx});
-
-    // 将get和post的参数都放入ctx.parameters中
-    let parameters = {};
-    parameters = Object.assign(parameters, ctx.request.query);
-    parameters = Object.assign(parameters, ctx.request.body);
-    ctx.parameters = parameters;
-
-    await next();
-})
+// app中间件
+app.use(appmiddleware.fn);
 
 // 初始化路由映射
 const routermap = require('./app/_config/routermap');
