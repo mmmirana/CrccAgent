@@ -12,7 +12,7 @@ let HttpUtils = {};
 HttpUtils.get = async function (url, params) {
     try {
         let paramStr = qs.stringify(params);
-        let path = paramStr ? url + `?${paramStr}` : path;
+        let path = paramStr ? url + `?${paramStr}` : url;
         let result = await axios.get(path);
         return result.data;
     } catch (e) {
@@ -28,5 +28,6 @@ HttpUtils.post = async function (url, params) {
         throw e.toString();
     }
 };
+
 
 module.exports = HttpUtils;

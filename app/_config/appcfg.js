@@ -35,7 +35,7 @@ let cfg = {
         },
         // 缓存文件目录
         temp: {
-            rootpath: path.resolve(pro_rootpath, "web/_temp")
+            rootpath: "web/_temp"
         },
     },
 

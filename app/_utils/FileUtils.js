@@ -214,4 +214,19 @@ FileUtils.readBuffer = function (filepath) {
     return fs.readFileSync(filepath);
 }
 
+/**
+ * 写入文件
+ * @param filepath
+ * @param content
+ * @param isAppend
+ */
+FileUtils.write = function (filepath, content, isAppend) {
+    content = content || "";
+    if (isAppend === true) {
+        fs.appendFileSync(filepath, content);
+    } else {
+        fs.writeFileSync(filepath, content);
+    }
+}
+
 module.exports = FileUtils;
