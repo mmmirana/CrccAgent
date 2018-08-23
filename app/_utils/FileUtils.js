@@ -150,6 +150,12 @@ FileUtils.upload = function (xfile, midpath) {
     };
 }
 
+/**
+ * 上传base64的图片
+ * @param base64Img
+ * @param midpath
+ * @returns {{filename: string, filepath: string}}
+ */
 FileUtils.uploadBase64Img = function (base64Img, midpath) {
     // 获取文件后缀
     let suffix = '.' + base64Img.match(/\w+(?=;base64)/g)[0];
@@ -227,6 +233,59 @@ FileUtils.write = function (filepath, content, isAppend) {
     } else {
         fs.writeFileSync(filepath, content);
     }
+}
+
+/**
+ * 获取子文件夹路径
+ * @param rootdir 根目录
+ * @param recursive 是否递归查询
+ * @returns {Array}
+ */
+FileUtils.getChildDirpath = function (rootdir, recursive) {
+    rootdir = path.join(rootdir);
+    let childdirpathArr = [];
+    if (this.existDir(rootdir)) {
+        // 获取所有的文件
+        let childfiles = fs.readdirSync(rootdir);
+        for (let i = 0; i < childfiles.length; i++) {
+            let childFile = childfiles[i];// 文件名
+            let childFilepath = path.join(rootdir, childFile);// 文件路径
+            if (this.existDir(childFilepath)) {
+                childdirpathArr.push(childFilepath);
+                if (recursive === true) {
+                    childdirpathArr = childdirpathArr.concat(this.getChildDirpath(childFilepath, recursive));
+                }
+            }
+        }
+    }
+    return childdirpathArr;
+}
+
+/**
+ * 获取子文件路径
+ * @param rootdir 根目录
+ * @param recursive 是否递归查询
+ * @returns {Array}
+ */
+FileUtils.getChildFilepath = function (rootdir, recursive) {
+    rootdir = path.join(rootdir);
+    let childFilepathArr = [];
+    if (this.existDir(rootdir)) {
+        // 获取所有的文件
+        let childfiles = fs.readdirSync(rootdir);
+        for (let i = 0; i < childfiles.length; i++) {
+            let childFile = childfiles[i];// 文件名
+            let childFilepath = path.join(rootdir, childFile);// 文件路径
+            if (this.existFile(childFilepath)) {
+                childFilepathArr.push(childFilepath);
+            } else {
+                if (recursive === true) {
+                    childFilepathArr = childFilepathArr.concat(this.getChildFilepath(childFilepath, recursive));
+                }
+            }
+        }
+    }
+    return childFilepathArr;
 }
 
 module.exports = FileUtils;
