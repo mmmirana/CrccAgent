@@ -3,9 +3,9 @@
 	"version": "0.1.0",
 	"private": true,
 	"scripts": {
-		"start": "node bin/www",
-		"dev": "./node_modules/.bin/nodemon bin/www",
-		"prd": "pm2 start bin/www",
+		"start": "node bin/crccPlugin.js",
+		"dev": "./node_modules/.bin/nodemon bin/crccPlugin.js",
+		"prd": "pm2 start bin/crccPlugin.js",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"dependencies": {
@@ -31,10 +31,6 @@
 		"tesseract.js": "^1.0.10"
 	},
 	"devDependencies": {
-		"jasmine-core": "^3.2.1",
-		"karma": "^3.0.0",
-		"karma-chrome-launcher": "^2.2.0",
-		"karma-jasmine": "^1.1.2",
 		"nodemon": "^1.8.1"
 	}
 }

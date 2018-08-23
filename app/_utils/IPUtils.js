@@ -7,6 +7,7 @@ let IPUtils = {};
  * @returns {*|string|string}
  */
 IPUtils.getClientIP = function (req) {
+    // 经过nginx反向代理服务器，请设置'X-Real-IP'的属性，
     let ip = req.headers['X-Real-IP'] ||
         req.headers['x-forwarded-for'] ||
         req.connection.remoteAddress || '';

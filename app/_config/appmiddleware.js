@@ -3,7 +3,6 @@ const IPUtils = require('../_utils/IPUtils');
 
 let appmiddleware = {};
 
-
 appmiddleware.fn = async function (ctx, next) {
 
     await attachParameters(ctx);
