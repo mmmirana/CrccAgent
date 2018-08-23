@@ -65,8 +65,8 @@ app.use(async (ctx, next) => {
 app.use(appmiddleware.fn);
 
 // 初始化路由映射
-const routermap = require('./app/_config/routermap');
-routermap.init(app);
+const routeloader = require('./app/_config/routeloader');
+routeloader.init(app);
 
 // error-handling
 app.on('error', (err, ctx) => {
