@@ -28,6 +28,7 @@
 		"koa-router": "^7.1.1",
 		"koa-sendfile": "^2.0.0",
 		"koa-static": "^3.0.0",
+		"koa2-cors": "^2.0.6",
 		"requirejs": "^2.3.5",
 		"tesseract.js": "^1.0.10"
 	},

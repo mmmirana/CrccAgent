@@ -4,6 +4,7 @@
 const path = require('path');
 const glob = require('glob');
 const appcfg = require('./appcfg');
+
 let routeloader = {};
 
 routeloader.init = function (app) {

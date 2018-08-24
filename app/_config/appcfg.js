@@ -8,7 +8,7 @@ let cfg = {
     // 项目名称
     pro_name: '中铁表单插件',
     // 项目ctx路径 默认''
-    pro_ctx: '/pro',
+    pro_ctx: '',
     // 项目端口号
     pro_port: 3100,
 
@@ -34,7 +34,7 @@ let cfg = {
 
         // 路由文件所在目录
         router: {
-            filepattern: 'app/project/**/route/*.js',
+            filepattern: 'app/project/**/route*/*.js',
         }
     },
 

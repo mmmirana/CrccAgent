@@ -30,7 +30,7 @@ router.post('/upload', async (ctx, next) => {
             let uploadResult = FileUtils.upload(xfile, midpath);
             ctx.body = ResultUtils.successData(uploadResult);
         } catch (e) {
-            ctx.body = ResultUtils.errorMsg("上传失败");
+            ctx.body = ResultUtils.errorMsg("上传失败：" + e.toString(),);
         }
     }
 });
@@ -52,7 +52,7 @@ router.post('/uploadBase64Img', async (ctx, next) => {
         let uploadResult = FileUtils.uploadBase64Img(base64Img, midpath);
         ctx.body = ResultUtils.successData(uploadResult);
     } catch (e) {
-        ctx.body = ResultUtils.errorMsg("上传失败");
+        ctx.body = ResultUtils.errorMsg("上传失败：" + e.toString(),);
     }
 });
 
@@ -63,7 +63,7 @@ router.get('/download', async function downloadFile(ctx, next) {
 
     let midpath = ctx.query.midpath || "";// 中间路径，类似于模块名
     let filename = ctx.query.filename;// 文件名称
-    let filepath = path.join(appcfg.base_cfg.upload.rootpath, midpath, filename);// 文件服务器路径
+    let filepath = path.join(appcfg.base_cfg.upload_rootpath, midpath, filename);// 文件服务器路径
 
     if (FileUtils.existFile(filepath)) {
         ctx.attachment(decodeURI(filepath));

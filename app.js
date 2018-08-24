@@ -9,6 +9,7 @@ const onerror = require('koa-onerror')
 const koaBody = require('koa-body')
 const bodyparser = require('koa-bodyparser')
 const logger = require('koa-logger')
+const cors = require('koa2-cors');
 
 // 项目配置信息
 const appcfg = require('./app/_config/appcfg');
@@ -16,6 +17,9 @@ const appmiddleware = require('./app/_config/appmiddleware');
 
 // error handler
 onerror(app)
+
+// 解决跨域问题
+app.use(cors());
 
 // koa2 文件上传配置，需要放在bodyParser之前，否则接收不到POST请求
 app.use(koaBody({

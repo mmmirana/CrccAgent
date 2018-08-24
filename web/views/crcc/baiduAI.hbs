@@ -14,8 +14,9 @@
 
 
     function resolveCode() {
-        let base64Img = getBase64Image($("#xImg")[0]);
+        let base64Img = getBase64Image($("#xImg"));
         $.ajax({
+            async: false,
             url: '{{ctx}}/common/resolveCode',
             type: 'post',
             data: {
@@ -33,7 +34,12 @@
         })
     }
 
-    function getBase64Image(img) {
+    function getBase64Image($img) {
+        if ($img.length === 0) {
+            alert('抱歉，找不到对应的验证码');
+            return;
+        }
+        let img = $img[0];
         let canvas = document.createElement("canvas");
         canvas.width = img.width;
         canvas.height = img.height;

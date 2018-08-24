@@ -134,7 +134,7 @@ FileUtils.upload = function (xfile, midpath) {
     let toFilename = FileUtils.newFilename(fromFilename);
 
     // 目标文件绝对路径
-    let toFilepath = path.join(appcfg.base_cfg.upload.rootpath, midpath, toFilename);
+    let toFilepath = path.join(appcfg.base_cfg.upload_rootpath, midpath, toFilename);
     // 如果上级目录不存在，则创建
     FileUtils.mkdirs(this.getDirname(toFilepath));
 
@@ -167,7 +167,7 @@ FileUtils.uploadBase64Img = function (base64Img, midpath) {
     base64Img = base64Img.replace(/^data:image\/\w+;base64,/, "");
     let dataBuffer = new Buffer(base64Img, 'base64');
 
-    let toFilepath = path.join(appcfg.base_cfg.upload.rootpath, midpath, toFilename);
+    let toFilepath = path.join(appcfg.base_cfg.upload_rootpath, midpath, toFilename);
 
     // 如果上级目录不存在，则创建
     FileUtils.mkdirs(this.getDirname(toFilepath));
