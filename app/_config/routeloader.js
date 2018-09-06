@@ -11,6 +11,8 @@ routeloader.init = function (app) {
     // 同步获取所有的root文件
     let routFiles = glob.sync(appcfg.base_cfg.router.filepattern);
 
+    console.log('routFiles', routFiles);
+
     routFiles.forEach(function (routeFile) {
         console.log('正在解析路由', routeFile);
         let routeItem = require(path.relative(__dirname, routeFile));

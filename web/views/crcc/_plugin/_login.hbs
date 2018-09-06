@@ -1,0 +1,50 @@
+<script src="{{ctx}}/web/static/js/jquery-3.3.1.min.js"></script>
+<script src="{{ctx}}/web/static/js/dateutils.js"></script>
+<script src="{{ctx}}/web/static/crcc/plugin_common.js"></script>
+<div id="plugin_pop">
+    <div>this is cp_pop</div>
+    <div>
+        <div>
+            授权邮箱：<input id="email" name="email" value="18166748035@163.com" placeholder="18166748035@163.com"/>
+        </div>
+        <button onclick="plugin_submit()">登录</button>
+    </div>
+    <div id="tips"></div>
+</div>
+<script>
+    function plugin_submit() {
+        let configData = cp_post('http://127.0.0.1:3100/crcc/getconfig', {
+            email: $("#email").val(),
+        });
+
+        if (configData && configData.code === 1) {
+            let config = configData.data;
+            let username = config.username;
+            let password = config.password;
+            login(username, password);
+        } else {
+            $("#tips").text(configData.msg || "服务器错误");
+        }
+    }
+
+    function login(username, password) {
+
+        let $img = $("#randImg");
+        let loginData = {
+            account: username,
+            password: password,
+            verifycode: resolveCode($img),
+        };
+
+        let loginResult = cp_post("http://aqgl.crcc.cn/login.do?reqCode=login", loginData);
+        console.log(JSON.stringify(loginResult));
+        if (loginResult && loginResult.success === true) {
+            window.location.href = "http://aqgl.crcc.cn/safequality/troubledvr.do?reqCode=troubledvrWriteInit1&menuid4Log=01050501"
+        } else {
+            // 重新登录
+            setTimeout(function () {
+                login(username, password)
+            }, 500);
+        }
+    }
+</script>

@@ -45,6 +45,18 @@ let cfg = {
             API_KEY: "wcIwFIGZcg8N4TRz6Zp3Qavi",
             SECRET_KEY: "tLs4kFEBOEvDqCAlkkbl4fxQPhEpcOTK",
         }
+    },
+
+    mysql: {
+        host: '127.0.0.1',
+        port: 3306,
+        user: 'root',
+        password: '1234',
+        database: 'db_crcc',
+    },
+
+    mysql_cfg: {
+        pk_name: 'sid',// 主键id字段名
     }
 };
 

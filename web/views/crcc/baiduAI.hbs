@@ -1,5 +1,5 @@
 <!-- 上传图片验证码解析 -->
-<img id="xImg" src="{{ctx}}/web/static/img/image.png"/>
+<img id="xImg" src="{{ctx}}/web/static/img/image.jpg"/>
 <br>
 <button onclick="resolveCode()">解析</button>
 <br>
@@ -8,6 +8,10 @@
 
 <script src="{{ctx}}/web/static/js/jquery-3.3.1.min.js"></script>
 <script>
+
+    let url = '{{ctx}}/common/resolveCode';
+    // url = 'http://crcc.mcourse.cc/common/resolveCode';
+
     $().ready(function () {
         console.log('jquery ready');
     });
@@ -17,7 +21,7 @@
         let base64Img = getBase64Image($("#xImg"));
         $.ajax({
             async: false,
-            url: '{{ctx}}/common/resolveCode',
+            url: `${url}`,
             type: 'post',
             data: {
                 base64Img: base64Img,

@@ -9,6 +9,7 @@
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"dependencies": {
+		"ali-rds": "^3.0.1",
 		"app-root-path": "^2.1.0",
 		"axios": "^0.18.0",
 		"baidu-aip-sdk": "^2.3.3",
@@ -29,6 +30,7 @@
 		"koa-sendfile": "^2.0.0",
 		"koa-static": "^3.0.0",
 		"koa2-cors": "^2.0.6",
+		"node-xlsx": "^0.12.1",
 		"requirejs": "^2.3.5",
 		"tesseract.js": "^1.0.10"
 	},
