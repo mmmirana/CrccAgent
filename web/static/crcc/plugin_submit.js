@@ -73,9 +73,8 @@ function initTodayData() {
  * 将节点同步至本地服务器
  */
 function syncYinhuanNodes() {
-    syncYinhuanNodesByNodes().then(function (syncSuccess) {
-        tips(true, '[ I ]同步隐患节点数据到插件服务器完成, syncSuccess：' + syncSuccess);
-    });
+    let syncSuccess = syncYinhuanNodesByNodes();
+    tips(true, '[ I ]同步隐患节点数据到插件服务器完成, syncSuccess：' + syncSuccess);
 }
 
 /**
@@ -83,53 +82,40 @@ function syncYinhuanNodes() {
  */
 function syncYinhuanNodesByNodes(pid) {
 
-    return new Promise(function (resolve, reject) {
+    let syncSuccess = 1;// 默认同步成功
 
-        let syncSuccess = 1;// 默认同步成功
+    // 获取隐患名称
+    let url = "http://aqgl.crcc.cn/safequality/troubledvr.do?reqCode=troubledvrAddTreeInit&troubleSort=000005&opttype=newline";
+    let data = {
+        node: pid,
+        loginuserid: '10426838',
+    };
 
-        // 获取隐患名称
-        let url = "http://aqgl.crcc.cn/safequality/troubledvr.do?reqCode=troubledvrAddTreeInit&troubleSort=000005&opttype=newline";
-        let data = {
-            node: pid,
-            loginuserid: '10426838',
-        };
-
-        cp_post(url, data).done(function (childNodes) {
-            if (childNodes.length > 0) {
-                // 上传至本地服务器
-                uploadYinhuanNodes(JSON.stringify(childNodes))
-                    .done(function (uploadresult) {
-                        // 上传成功
-                        if ((uploadresult.code || 0) === 1) {
-                            for (let j = 0; j < childNodes.length; j++) {
-                                let childNode = childNodes[j];
-                                if (childNode.id) {
-                                    syncYinhuanNodesByNodes(childNode.id)
-                                        .done(function (data) {
-                                            syncSuccess *= data;
-                                            resolve(syncSuccess);
-                                        });
-                                }
-                            }
-                        }
-                    });
+    let childNodes = cp_post_sync(url, data);
+    if (childNodes.length > 0) {
+        // 上传至本地服务器
+        let uploadresult = uploadYinhuanNodes(JSON.stringify(childNodes));
+        // 上传成功
+        if ((uploadresult.code || 0) === 1) {
+            for (let j = 0; j < childNodes.length; j++) {
+                let childNode = childNodes[j];
+                if (childNode.id) {
+                    let data = syncYinhuanNodesByNodes(childNode.id);
+                    syncSuccess *= data;
+                }
             }
-        });
-    });
+        }
+    }
+    return syncSuccess;
 }
 
 /**
  * 上传至服务器
  * @param textJson
- * @returns {SVGElementInstanceList | NodeListOf<Node & ChildNode> | ActiveX.IXMLDOMNodeList}
+ * @returns {Promise<any>}
  */
 function uploadYinhuanNodes(textJson) {
-    return new Promise(function (resolve, reject) {
-        cp_post(cfg.crccBaseUrl + '/crcc/updateYinhuanNodes', {textJson: textJson})
-            .done(function (data) {
-                resolve(data);
-            });
-    })
+    return cp_post_sync(cfg.crccBaseUrl + '/crcc/updateYinhuanNodes', {textJson: textJson});
 }
 
 /**
@@ -280,30 +266,31 @@ function submitUploadDataNow(postdataObj_data, cb) {
 function generateTodayData(cb) {
 
     // 获取今日数据，如果获取失败，告知不要进行后续操作
-    let initFlag = initTodayData();
-    if (initFlag === false) {
-        cb(false);
-    } else {
-        // 已经生成过了，确定是否继续生成
-        if (genGroupNumber > 0) {
-            mdui.confirm('您今天已经生成了 ' + genGroupNumber + ' 组数据，是否重新生成？', function () {
+    initTodayData().then(function (initFlag) {
+        if (initFlag === false) {
+            cb(false);
+        } else {
+            // 已经生成过了，确定是否继续生成
+            if (genGroupNumber > 0) {
+                mdui.confirm('您今天已经生成了 ' + genGroupNumber + ' 组数据，是否重新生成？', function () {
+                    // 正常生成数据后，执行
+                    tips(true, "[ I ]正在为您生成数据，请稍后...");
+                    let genGroupNumAlreay = generateTodayDataFn();
+                    tips(true, '[ I ]生成数据完毕, 共生成' + genGroupNumAlreay + '组数据');
+                    cb(true);
+                }, function () {
+                    // 不再生成，告知可以继续
+                    cb(true);
+                })
+            } else {
                 // 正常生成数据后，执行
                 tips(true, "[ I ]正在为您生成数据，请稍后...");
                 let genGroupNumAlreay = generateTodayDataFn();
                 tips(true, '[ I ]生成数据完毕, 共生成' + genGroupNumAlreay + '组数据');
                 cb(true);
-            }, function () {
-                // 不再生成，告知可以继续
-                cb(true);
-            })
-        } else {
-            // 正常生成数据后，执行
-            tips(true, "[ I ]正在为您生成数据，请稍后...");
-            let genGroupNumAlreay = generateTodayDataFn();
-            tips(true, '[ I ]生成数据完毕, 共生成' + genGroupNumAlreay + '组数据');
-            cb(true);
+            }
         }
-    }
+    });
 }
 
 /**
