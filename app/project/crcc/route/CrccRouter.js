@@ -40,7 +40,7 @@ router.post('/getconfig', async function (ctx, next) {
             if (configData && configData.length > 0) {
                 ctx.body = ResultUtils.successData(configData[0]);
             } else {
-                ctx.body = ResultUtils.errorMsg("无法匹配该邮件或该邮件未生效");
+                ctx.body = ResultUtils.errorMsg("无法匹配该邮件或该邮件未授权");
             }
         }
     } catch (e) {

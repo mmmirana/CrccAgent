@@ -52,10 +52,9 @@ FROM
 WHERE
 	1 = 1 
 	AND t.\`status\` = 0 
-	AND DATE_FORMAT( t.create_time, "%Y-%m-%d" ) = ?
-	AND t.sid >= ( SELECT FLOOR( MAX( sid ) * RAND( ) ) FROM yinhuan_postdata ) 
+	AND DATE_FORMAT( t.create_time, "%Y-%m-%d" ) = ? 
 ORDER BY
-	t.sid 
+	RAND( ) 
 	LIMIT ?`;
         let params = [date, number];
 
