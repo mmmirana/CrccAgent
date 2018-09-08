@@ -90,5 +90,6 @@ RandomUtils.generateLetterAndNumber = function (length) {
     return this.generateRandom(length, this.randomType.number + this.randomType.letterLower + this.randomType.letterUpper);
 }
 
+console.log(RandomUtils.generateRandom(32, RandomUtils.randomType.number + RandomUtils.randomType.letterUpper));
 
 module.exports = RandomUtils;

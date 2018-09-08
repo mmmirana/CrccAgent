@@ -1,15 +1,20 @@
 const router = require('koa-router')();
-const basic_config = require('../model/basic_config');
+const basic_authModel = require('../model/basic_authModel');
+const basic_configModel = require('../model/basic_configModel');
 const basic_unitModel = require('../model/basic_unitModel');
 const basic_nodeModel = require('../model/basic_nodeModel');
 const basic_problemModel = require('../model/basic_problemModel');
 const yinhuan_postdataModel = require('../model/yinhuan_postdataModel');
-const yinhuan_logModel = require('../model/yinhuan_logModel');
+const yinhuan_rmdangerModel = require('../model/yinhuan_rmdangerModel');
 const ResultUtils = require('../../../_utils/ResultUtils');
 const DateUtils = require('../../../_utils/DateUtils');
 const FileUtils = require('../../../_utils/FileUtils');
 
 router.prefix('/crcc');
+
+router.get('/', async function (ctx, next) {
+    ctx.body = 'crcc index';
+});
 
 /**
  * 心跳接口
@@ -18,34 +23,75 @@ router.get('/Heartbeat', async function (ctx, next) {
     ctx.body = true;
 })
 
-router.get('/', async function (ctx, next) {
-    ctx.body = 'crcc index';
-});
 
 /**
- * 获取配置项
+ * 根据邮箱获取配置项
  */
 router.post('/getconfig', async function (ctx, next) {
+    let result = "";
     try {
         let email = ctx.parameters.email;
         if (!email) {
-            ctx.body = ResultUtils.errorMsg('缺失参数email');
+            result = ResultUtils.errorMsg('缺失参数email');
         } else {
             let where = {
-                op_email: email,
-                enable: 1,
+                email: email,
             };
-
-            let configData = await basic_config.select(where);
-            if (configData && configData.length > 0) {
-                ctx.body = ResultUtils.successData(configData[0]);
+            // 根据邮箱查找授权appid
+            let authData = await basic_authModel.select(where);
+            if (authData && authData.length > 0) {
+                let auth = authData[0];
+                if (auth.enable === 0) {
+                    result = ResultUtils.errorMsg('该邮箱尚未授权');
+                } else {
+                    let configData = await basic_configModel.select({appid: auth.appid});
+                    if (configData && configData.length > 0) {
+                        let config = configData[0];
+                        if (config.enable === 0) {
+                            result = ResultUtils.errorMsg('与该邮箱匹配的应用尚未启用');
+                        } else {
+                            result = ResultUtils.successData(config);
+                        }
+                    } else {
+                        result = ResultUtils.errorMsg('无法匹配该邮箱的应用信息');
+                    }
+                }
             } else {
-                ctx.body = ResultUtils.errorMsg("无法匹配该邮件或该邮件未授权");
+                result = ResultUtils.errorMsg('无法匹配该邮箱');
             }
         }
     } catch (e) {
-        ctx.body = ResultUtils.errorMsg(e.toString());
+        result = ResultUtils.errorMsg(e.toString());
     }
+    ctx.body = result;
+});
+/**
+ * 根据邮箱获取配置项
+ */
+router.post('/getconfigByAppid', async function (ctx, next) {
+    let result = "";
+    try {
+        // 根据appid查找插件配置
+        let appid = ctx.parameters.appid;
+        if (!appid) {
+            result = ResultUtils.errorMsg('缺失参数appid');
+        } else {
+            let configData = await basic_configModel.select({appid: appid});
+            if (configData && configData.length > 0) {
+                let config = configData[0];
+                if (config.enable === 0) {
+                    result = ResultUtils.errorMsg('该应用尚未启用');
+                } else {
+                    result = ResultUtils.successData(config);
+                }
+            } else {
+                result = ResultUtils.errorMsg('无法匹配该应用');
+            }
+        }
+    } catch (e) {
+        result = ResultUtils.errorMsg(e.toString());
+    }
+    ctx.body = result;
 });
 
 
@@ -54,17 +100,17 @@ router.post('/getconfig', async function (ctx, next) {
  */
 router.post('/updateConfigUserid', async function (ctx, next) {
     try {
-        let sid = ctx.parameters.sid;
+        let appid = ctx.parameters.appid;
         let guserid = ctx.parameters.guserid;
-        if (!sid) {
-            ctx.body = ResultUtils.errorMsg('缺失参数sid');
+        if (!appid) {
+            ctx.body = ResultUtils.errorMsg('缺失参数appid');
         } else if (!guserid) {
             ctx.body = ResultUtils.errorMsg('缺失参数guserid');
         } else {
             let row = {
                 guserid: guserid,
             };
-            let updateResult = await basic_config.updateByPk(row, sid);
+            let updateResult = await basic_configModel.update(row, {appid: appid});
             ctx.body = ResultUtils.successData(updateResult);
         }
     } catch (e) {
@@ -241,6 +287,90 @@ router.post('/postdataSuccess', async function (ctx, next) {
         ctx.body = ResultUtils.successData(updateResult.affectedRows);
     } catch (e) {
         ctx.body = ResultUtils.errorMsg(e.toString());
+    }
+});
+
+/**
+ * 上传消除隐患的数据
+ */
+router.post('/uploadDangerlist', async function (ctx) {
+    try {
+        let dangerlistJson = ctx.parameters.dangerlistJson;
+        let dangerlist = JSON.parse(dangerlistJson);
+        // 遍历数据
+        for (let i = 0; i < dangerlist.length; i++) {
+            let danger = dangerlist[i];
+
+            let dangerModel = {
+                username: danger.username,
+                userid: danger.userid,
+                project_unit_name: danger.project_unit_name,
+                funit: danger.funit,
+                fprojecttypename: danger.fprojecttypename,
+                fprojectname: danger.fprojectname,
+                check_man: danger.check_man,
+                home_score: danger.home_score,
+                status: danger.status,
+                danger_longname: danger.danger_longname,
+                dangerid: danger.dangerid,
+                dangerdesc: danger.dangerdesc,
+                check_time: danger.check_time,
+                unitdeptname: danger.unitdeptname,
+                create_time: danger.create_time,
+                titledesc: danger.titledesc,
+                cp_troubleid: danger.cp_troubleid,
+                troublename: danger.troublename,
+            };
+
+            let count = await yinhuan_rmdangerModel.count(dangerModel);
+            if (count === 0) {
+                let insertResult = await yinhuan_rmdangerModel.insert(dangerModel);
+                console.log(insertResult);
+            }
+        }
+        ctx.body = ResultUtils.successMsg("上传成功");
+    } catch (e) {
+        ctx.body = ResultUtils.errorMsg("解析消除隐患列表异常" + e.toString());
+    }
+});
+
+/**
+ * 获取某天要消除的隐患列表
+ */
+router.post('/getdangerlist', async function (ctx) {
+    try {
+        let someday = ctx.parameters.someday;
+        let where = {
+            sstatus: 0,//查询尚未消除的隐患
+        };
+        // 如果有值，查询某天的数据。没值查询所有
+        if (someday) {
+            where.check_time = someday;
+        }
+        let result = await yinhuan_rmdangerModel.select(where);
+        ctx.body = ResultUtils.successData(result);
+    } catch (e) {
+        ctx.body = ResultUtils.errorMsg("获取消除隐患列表异常" + e.toString());
+    }
+});
+
+/**
+ * 消除隐患成功，更新状态
+ */
+router.post('/rmdangerBySid', async function (ctx) {
+    try {
+        let sid = ctx.parameters.sid;
+        let sstatus = ctx.parameters.sstatus;
+        let dataid = ctx.parameters.dataid;
+
+        let row = {
+            sstatus: sstatus,
+            dataid: dataid,
+        };
+        let result = await yinhuan_rmdangerModel.updateByPk(row, sid);
+        ctx.body = ResultUtils.successData(result);
+    } catch (e) {
+        ctx.body = ResultUtils.errorMsg("获取消除隐患列表异常" + e.toString());
     }
 });
 

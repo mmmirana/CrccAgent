@@ -23,6 +23,9 @@ app.use(cors());
 
 // koa2 文件上传配置，需要放在bodyParser之前，否则接收不到POST请求
 app.use(koaBody({
+    "formLimit": "5mb",
+    "jsonLimit": "5mb",
+    "textLimit": "5mb",
     multipart: true,
     formidable: {
         maxFileSize: 1024 * 1024 * 10  // 设置上传文件大小最大限制，默认 10M

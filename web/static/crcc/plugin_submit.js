@@ -1,9 +1,3 @@
-function testTips() {
-    for (let i = 0; i < 1000; i++) {
-        tips(true, "ceshi " + (i + 1));
-    }
-}
-
 // 要初始化的数据
 let unitArr = [];// 获取所有的施工单位
 let genGroupNumber = 0;// 今日已生成的数据
@@ -14,10 +8,7 @@ $().ready(function () {
         // 选项（配置）...
         containment: true,
         handle: '.handle',
-        axis: 'y',
-    })
-
-    debugger;
+    });
 
     // 获取单位列表
     cp_post(cfg.crccBaseUrl + '/crcc/getAllUnit')
@@ -41,9 +32,32 @@ function submitDataOneKey() {
 
         // 生成数据正常，进行后续操作
         if (nextStep) {
-            let submitFlag = confirm('确认提交数据？');
-            if (submitFlag)
-                submitData();
+            let inst = mdui.confirm('一键提交数据？', function () {
+                // 关闭弹窗
+                inst.close();
+                // 提交数据，参数remain为要提交的组数
+                submitData(function (remain) {
+
+                    let postdataData = cp_post_sync(cfg.crccBaseUrl + '/crcc/getRandomPostData', {itemNumber: remain});
+                    if ((postdataData.code || 0) === 1) {
+                        let postdataArr = postdataData.data;
+                        let post_index = 0;
+
+                        tips(true, '[ I ]获取到：' + postdataArr.length + ' 组数据，准备提交...');
+                        submitSingleData(postdataArr, post_index);
+
+                    }
+                });
+            }, function () {
+                // 关闭弹窗
+                inst.close();
+                // 提示取消提交数据
+                tips(true, '[ I ]您取消了提交数据');
+            }, {
+                confirmText: '确定',
+                cancelText: '取消',
+            });
+
         } else {
             tips(true, "[ E ]插件服务器生成数据时异常，请重试");
         }
@@ -121,7 +135,7 @@ function uploadYinhuanNodes(textJson) {
 /**
  * 校验并提交数据
  */
-function submitData() {
+function submitData(cb) {
 
     initTodayData().then(function (initFlag) {
         if (initFlag === false) {
@@ -134,28 +148,33 @@ function submitData() {
         // 要提交数据的总组数
         let cp_totalpage = cfg.cp_totalpage;
         if (submitGroupNumber >= cp_totalpage) {
-            remain = prompt('每日计划提交 ' + cp_totalpage + ' 条数据，今日已提交 ' + submitGroupNumber + ' 组数据，再次提交多少组？', '5');
-            remain = parseInt(remain);
-            if (isNaN(remain) || remain === 0) {
-                tips(true, "[ I ]提交数据的操作 已经取消");
-                return;
-            }
-            tips(true, '[ I ]正在继续提交 ' + remain + ' 数据，请稍后...');
+            let inst = mdui.prompt('每日计划提交 ' + cp_totalpage + ' 组数据，今日已提交 ' + submitGroupNumber + ' 组数据，再次提交多少组数据（请输入正整数）？',
+                function (remain) {
+                    inst.close();
+
+                    remain = parseInt(remain);
+                    if (isNaN(remain) || remain === 0) {
+                        tips(true, "[ I ]操作自动取消，请输入正整数后重试");
+                    } else {
+                        tips(true, '[ I ]正在继续提交 ' + remain + ' 数据，请稍后...');
+                        // 继续提交
+                        cb(remain);
+                    }
+                }, function () {
+                    inst.close();
+                }, {
+                    confirmText: '确定',
+                    cancelText: '取消',
+                });
         } else {
             remain = cp_totalpage - submitGroupNumber;
             tips(true, '[ I ]继续提交剩余 ' + remain + ' 组数组');
+            // 继续提交
+            cb(remain);
         }
-
-        cp_post(cfg.crccBaseUrl + '/crcc/getRandomPostData', {itemNumber: remain}).done(function (postdataData) {
-            if ((postdataData.code || 0) === 1) {
-                let postdataArr = postdataData.data;
-                let post_index = 0;
-                tips(true, '[ I ]从插件服务器获取到：' + postdataArr.length + ' 组数据，马上为您提交...');
-                submitSingleData(postdataArr, post_index);
-            }
-        });
     });
 }
+
 
 /**
  * 遍历提交单条数据
@@ -172,22 +191,22 @@ function submitSingleData(postdataArr, post_index) {
 
         // 2 直接提交
         submitUploadDataNow(postdataObj_data, function () {
-            cp_post(cfg.crccBaseUrl + '/crcc/postdataSuccess', {
+
+            let updateReturn = cp_post_sync(cfg.crccBaseUrl + '/crcc/postdataSuccess', {
                 postdata_sid: postdataObj_sid,
                 postdata_status: 3
-            }).done(function (updateReturn) {
-                if (updateReturn && updateReturn.code === 1) {
-                    tips(true, '[ I ]更新插件服务器数据成功');
-                } else {
-                    tips(true, '[ I ]更新插件服务器数据失败，返回：' + JSON.stringify(updateReturn));
-                }
-
-                let $img = $(window.frames[0].document).find("#randSaveImg");
-                $img.click();
-                setTimeout(function () {
-                    submitSingleData(postdataArr, ++post_index);
-                }, 500);
             });
+            if (updateReturn && updateReturn.code === 1) {
+                tips(false, '[ I ]更新插件服务器数据成功');
+            } else {
+                tips(true, '[ I ]更新插件服务器数据失败：' + updateReturn ? updateReturn.msg : '服务器错误');
+            }
+
+            let $img = $(window.frames[0].document).find("#randSaveImg");
+            $img.click();
+            setTimeout(function () {
+                submitSingleData(postdataArr, ++post_index);
+            }, 500);
         });
     }
 }
@@ -207,48 +226,45 @@ function submitUploadDataNow(postdataObj_data, cb) {
             loginuserid: storageutils.get("cp_guserid"),
         };
         // 1、校验验证码
-        cp_post("http://aqgl.crcc.cn/safequality/troubledvr.do?reqCode=validateEditGridAttacheType", validateValcodeData)
-            .done(function (cp_validateReturn) {
-                if (cp_validateReturn && cp_validateReturn.success) {
-                    // # 提交结果
-                    let submitTableData = {
-                        hasCheckPerson: true,
-                        userids: "aa",
-                        opt: "add",
-                        batchid: "",
-                        fid: getfid(),
-                        dirtydata: postdataObj_data.dirtydata,
-                        unitProject: postdataObj_data.unitProject,
-                        ttype: 1,
-                        unitProjectName: postdataObj_data.unitProjectName,
-                        workTeam: postdataObj_data.workTeam,
-                        wtCheckMan: postdataObj_data.wtCheckMan,
-                        safetyphone: postdataObj_data.safetyphone,
-                        verifycode: validateCode,
-                        loginuserid: storageutils.get("cp_guserid"),
-                    };
+        let cp_validateReturn = cp_post_sync("http://aqgl.crcc.cn/safequality/troubledvr.do?reqCode=validateEditGridAttacheType", validateValcodeData);
+        if (cp_validateReturn && cp_validateReturn.success) {
+            // # 提交结果
+            let submitTableData = {
+                hasCheckPerson: true,
+                userids: "aa",
+                opt: "add",
+                batchid: "",
+                fid: getfid(),
+                dirtydata: postdataObj_data.dirtydata,
+                unitProject: postdataObj_data.unitProject,
+                ttype: 1,
+                unitProjectName: postdataObj_data.unitProjectName,
+                workTeam: postdataObj_data.workTeam,
+                wtCheckMan: postdataObj_data.wtCheckMan,
+                safetyphone: postdataObj_data.safetyphone,
+                verifycode: validateCode,
+                loginuserid: storageutils.get("cp_guserid"),
+            };
 
-                    // 2、开始提交
-                    cp_post("http://aqgl.crcc.cn/safequality/troubledvr.do?reqCode=troubleSubmitExamine", submitTableData)
-                        .done(function (cp_submitReturn) {
-                            // 保存成功
-                            if (cp_submitReturn && cp_submitReturn.success) {
-                                tips(true, '[ I ]提交数据成功');
-                                cb();
-                            } else {
-                                $img.click();
-                                setTimeout(function () {
-                                    submitUploadDataNow(postdataObj_data, cb);
-                                }, 500);
-                            }
-                        });
-                } else {
-                    $img.click();
-                    setTimeout(function () {
-                        submitUploadDataNow(postdataObj_data, cb);
-                    }, 500);
-                }
-            });
+            // 2、开始提交
+            let cp_submitReturn = cp_post_sync("http://aqgl.crcc.cn/safequality/troubledvr.do?reqCode=troubleSubmitExamine", submitTableData);
+
+            // 保存成功
+            if (cp_submitReturn && cp_submitReturn.success) {
+                tips(true, '[ I ]提交数据成功');
+                cb();
+            } else {
+                $img.click();
+                setTimeout(function () {
+                    submitUploadDataNow(postdataObj_data, cb);
+                }, 500);
+            }
+        } else {
+            $img.click();
+            setTimeout(function () {
+                submitUploadDataNow(postdataObj_data, cb);
+            }, 500);
+        }
     } else {
         $img.click();
         setTimeout(function () {
@@ -260,7 +276,6 @@ function submitUploadDataNow(postdataObj_data, cb) {
 
 /**
  * 生成今日要提交的数据
- * @param oneKey 是否一键生成数据
  * @param cb 参数nextStep 如果nextStep则可以进行后续操作，否则取消
  */
 function generateTodayData(cb) {
@@ -272,21 +287,39 @@ function generateTodayData(cb) {
         } else {
             // 已经生成过了，确定是否继续生成
             if (genGroupNumber > 0) {
-                mdui.confirm('您今天已经生成了 ' + genGroupNumber + ' 组数据，是否重新生成？', function () {
-                    // 正常生成数据后，执行
-                    tips(true, "[ I ]正在为您生成数据，请稍后...");
-                    let genGroupNumAlreay = generateTodayDataFn();
-                    tips(true, '[ I ]生成数据完毕, 共生成' + genGroupNumAlreay + '组数据');
-                    cb(true);
-                }, function () {
-                    // 不再生成，告知可以继续
-                    cb(true);
-                })
+                // 不再重新生成
+                // let inst = mdui.confirm('您今天已经生成了 ' + genGroupNumber + ' 组数据，是否重新生成？', function () {
+                //     // 关闭弹窗
+                //     inst.close();
+                //
+                //     tips(true, "[ I ]正在为您生成数据，请稍后...");
+                //     let genGroupNumAlreay = generateTodayDataFn();
+                //     tips(true, '[ I ]生成数据完毕, 共生成' + genGroupNumAlreay + '组数据');
+                //
+                //     cb(true);
+                //
+                // }, function () {
+                //     // 关闭弹窗
+                //     inst.close();
+                //
+                //     // 提示取消提交数据
+                //     tips(true, '[ I ]您取消了提交数据');
+                //
+                //     // 不再生成，告知可以继续
+                //     cb(true);
+                // }, {
+                //     confirmText: '确定',
+                //     cancelText: '取消',
+                // });
+
+                // 不再生成，告知可以继续
+                cb(true);
+
             } else {
-                // 正常生成数据后，执行
                 tips(true, "[ I ]正在为您生成数据，请稍后...");
                 let genGroupNumAlreay = generateTodayDataFn();
                 tips(true, '[ I ]生成数据完毕, 共生成' + genGroupNumAlreay + '组数据');
+
                 cb(true);
             }
         }
@@ -361,13 +394,13 @@ function generateTodayDataFn() {
 
                         tips(false, '---3 ' + '正在准备隐患问题数据：' + problem.problem);
 
+                        // 16个属性
                         let dirtyItem = {
                             unitproject: unitText,
                             workteam: unitWorkteam,
                             wtcheckman: unitCheckman,
                             troublescore: lastNode.score,
                             dangerid: lastNode.id,
-                            troublescore: lastNode.score,
                             titledesc: lastNode.danger_name,
                             discoverydate: dateutils.format(new Date(), 'yyyy-MM-dd'),
                             attache_type: 0,

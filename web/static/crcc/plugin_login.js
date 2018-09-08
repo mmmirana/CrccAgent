@@ -5,11 +5,10 @@ $().ready(function () {
         // 选项（配置）...
         containment: true,
         handle: '.handle',
-        axis: 'y',
     })
 });
 
-function plugin_submit() {
+function loginOnekey() {
     cp_post(cfg.crccBaseUrl + '/crcc/getconfig', {
         email: $("#email").val(),
     }).then(function (configData) {
@@ -17,11 +16,9 @@ function plugin_submit() {
             let config = configData.data;
             plugin_login(config);
         } else {
-            tips(true, '[ E ]' + (configData ? configData.msg : '请确认邮箱地址已授权！'));
+            tips(true, '[ E ]' + (configData ? configData.msg : '请确认邮箱已授权！'));
         }
     });
-
-
 }
 
 
@@ -30,11 +27,12 @@ function plugin_submit() {
  * @param config
  */
 function plugin_login(config) {
+
     cp_login_num++;
 
     tips(true, '[ I ]正在尝试第 ' + cp_login_num + ' 次登录');
 
-    let sid = config.sid;
+    let appid = config.appid;
     let username = config.username;
     let password = config.password;
     let $img = $("#randImg");
@@ -50,7 +48,7 @@ function plugin_login(config) {
         cp_post("http://aqgl.crcc.cn/login.do?reqCode=login", loginData).then(function (loginResult) {
             if (loginResult.success === true) {
                 let useridData = {
-                    sid: sid,
+                    appid: appid,
                     guserid: loginResult.userid,
                 };
 

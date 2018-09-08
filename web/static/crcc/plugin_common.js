@@ -151,21 +151,44 @@ function testCrccAgent() {
  */
 function tips(showInfo, msg) {
     console.log(showInfo, msg);
-    if (showInfo) {
-        if (cp_msgStack.length >= cfg.cp_tipsLength) {
-            cp_msgStack.shift();
+    setTimeout(function () {
+        if (showInfo) {
+            if (cp_msgStack.length >= cfg.cp_tipsLength) {
+                cp_msgStack.shift();
+            }
+            cp_msgStack.push(msg);
+            $tips = $("#tips");
+            if ($tips.length > 0) {
+                let tipsInnnerHtml = cp_msgStack.map(function (v) {
+                    return "<span>" + v + "</span>";
+                });
+                $tips.html(tipsInnnerHtml.join("<br>"));
+            }
         }
-        cp_msgStack.push(msg);
-        $tips = $("#tips");
-        if ($tips.length > 0) {
-            let tipsInnnerHtml = cp_msgStack.map(function (v) {
-                return "<span>" + v + "</span>";
-            });
-            $tips.html(tipsInnnerHtml.join("<br>"));
-        }
-    }
+    }, 100);
+
 }
 
 function plugin_logout() {
     window.location.href = 'http://aqgl.crcc.cn/login.do?reqCode=logout';
+}
+
+/**
+ * 插件加载中
+ */
+function cpLoading(title, content) {
+    let customLoading = $("#customLoading");
+    var inst = new mdui.Dialog('#customLoading');
+    if (title) {
+        $("#customLoading .mdui-dialog-title").text(title);
+    } else {
+        $("#customLoading .mdui-dialog-title").text("提示");
+    }
+    if (content) {
+        $("#customLoading .customContent").text(content);
+    } else {
+        $("#customLoading .customContent").text("");
+    }
+    inst.open();
+    return inst;
 }
