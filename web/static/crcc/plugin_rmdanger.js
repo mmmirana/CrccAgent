@@ -19,7 +19,7 @@ function deldangerOnekey() {
                     cancelText: '取消',
                 })
             } else {
-                let deldangerInst = mdui.confirm("获取隐患列表成功，确定一键消除隐患？", function () {
+                let deldangerInst = mdui.confirm(`获取隐患列表成功，确定一键消除 ${listsize} 条隐患？`, function () {
                     deldangerInst.close();
                     // 消除所有隐患
                     let delloading = cpLoading("消除隐患", '正在逐条消除隐患，请稍等...');

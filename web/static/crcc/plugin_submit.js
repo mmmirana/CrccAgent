@@ -300,13 +300,18 @@ function generateTodayData(cb) {
                 cb(true);
 
             } else {
+                // 生成数据前弹窗
                 tips(true, "[ I ]正在为您生成数据，请稍后...");
                 let loadingInst = cpLoading('准备提交数据', '正在准备要提交数据，请稍后...');
-                let genGroupNumAlreay = generateTodayDataFn();
-                loadingInst.close();
-                tips(true, '[ I ]生成数据完毕, 共生成' + genGroupNumAlreay + '组数据');
+                setTimeout(function () {
 
-                cb(true);
+                    let genGroupNumAlreay = generateTodayDataFn();
+
+                    // 生成数据后关闭弹窗
+                    loadingInst.close();
+                    tips(true, '[ I ]生成数据完毕, 共生成' + genGroupNumAlreay + '组数据');
+                    cb(true);
+                }, 500);
             }
         }
     });
