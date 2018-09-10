@@ -48,44 +48,16 @@ router.post('/getconfig', async function (ctx, next) {
                     if (configData && configData.length > 0) {
                         let config = configData[0];
                         if (config.enable === 0) {
-                            result = ResultUtils.errorMsg('与该邮箱匹配的应用尚未启用');
+                            result = ResultUtils.errorMsg('该邮箱的应用未启用');
                         } else {
                             result = ResultUtils.successData(config);
                         }
                     } else {
-                        result = ResultUtils.errorMsg('无法匹配该邮箱的应用信息');
+                        result = ResultUtils.errorMsg('该邮箱的应用尚未配置');
                     }
                 }
             } else {
                 result = ResultUtils.errorMsg('无法匹配该邮箱');
-            }
-        }
-    } catch (e) {
-        result = ResultUtils.errorMsg(e.toString());
-    }
-    ctx.body = result;
-});
-/**
- * 根据邮箱获取配置项
- */
-router.post('/getconfigByAppid', async function (ctx, next) {
-    let result = "";
-    try {
-        // 根据appid查找插件配置
-        let appid = ctx.parameters.appid;
-        if (!appid) {
-            result = ResultUtils.errorMsg('缺失参数appid');
-        } else {
-            let configData = await basic_configModel.select({appid: appid});
-            if (configData && configData.length > 0) {
-                let config = configData[0];
-                if (config.enable === 0) {
-                    result = ResultUtils.errorMsg('该应用尚未启用');
-                } else {
-                    result = ResultUtils.successData(config);
-                }
-            } else {
-                result = ResultUtils.errorMsg('无法匹配该应用');
             }
         }
     } catch (e) {
@@ -110,7 +82,7 @@ router.post('/updateConfigUserid', async function (ctx, next) {
             let row = {
                 guserid: guserid,
             };
-            let updateResult = await basic_configModel.update(row, {appid: appid});
+            let updateResult = await basic_configModel.update(row, {appid: appid, enable: 1});
             ctx.body = ResultUtils.successData(updateResult);
         }
     } catch (e) {
@@ -122,11 +94,12 @@ router.post('/updateConfigUserid', async function (ctx, next) {
  * 更新隐患节点数据
  */
 router.post('/updateYinhuanNodes', async function (ctx, next) {
+    let appid = ctx.parameters.appid;
     let textJson = ctx.parameters.textJson;
     if (textJson) {
         try {
             let yinHuanNodes = JSON.parse(textJson);
-            await basic_nodeModel.insertYinhuanNodes(yinHuanNodes);
+            await basic_nodeModel.insertYinhuanNodes(appid, yinHuanNodes);
 
             ctx.body = ResultUtils.successMsg('上传成功');
         } catch (e) {
@@ -190,6 +163,8 @@ router.post('/uploadPostData', async function (ctx, next) {
     try {
 
         let postDataModel = {};
+        postDataModel.appid = ctx.parameters.appid;// appid
+
         postDataModel.unitcode = ctx.parameters.unitcode;
         postDataModel.nodecode = ctx.parameters.nodecode;
         postDataModel.problemcode = ctx.parameters.problemcode;
@@ -295,6 +270,7 @@ router.post('/postdataSuccess', async function (ctx, next) {
  */
 router.post('/uploadDangerlist', async function (ctx) {
     try {
+        let appid = ctx.parameters.appid;
         let dangerlistJson = ctx.parameters.dangerlistJson;
         let dangerlist = JSON.parse(dangerlistJson);
         // 遍历数据
@@ -302,6 +278,7 @@ router.post('/uploadDangerlist', async function (ctx) {
             let danger = dangerlist[i];
 
             let dangerModel = {
+                appid: appid,
                 username: danger.username,
                 userid: danger.userid,
                 project_unit_name: danger.project_unit_name,

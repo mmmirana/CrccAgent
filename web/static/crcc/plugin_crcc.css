@@ -30,3 +30,7 @@ div#tips {
 .mdui-snackbar {
     z-index: 9100 !important;
 }
+
+#customLoading .customContent {
+    padding-top: 10px;
+}

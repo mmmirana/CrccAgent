@@ -192,3 +192,36 @@ function cpLoading(title, content) {
     inst.open();
     return inst;
 }
+
+/**
+ * 初始化配置
+ * @param email
+ */
+function initCfg(email) {
+    let configData = cp_post_sync(cfg.crccBaseUrl + '/crcc/getconfig', {
+        email: email,
+    });
+
+    if (configData && configData.code === 1) {
+        let config = configData.data;
+
+        // 将邮对应的appid，username和email放入localstorage
+        storageutils.set("cp_appid", config.appid);
+        storageutils.set("cp_email", email);
+        storageutils.set("cp_gusername", config.username);
+
+        window.cfg = {
+            crccBaseUrl: config.crccBaseUrl,
+            cp_genGroupNum: config.cp_genGroupNum,
+            cp_pagesize: config.cp_pagesize,
+            cp_tipsLength: config.cp_tipsLength,
+            cp_totalpage: config.cp_totalpage,
+            crcctitle: config.crcctitle,
+            solution: config.solution
+        };
+        tips(true, `[ I ] 获取系统配置成功`);
+        return config;
+    } else {
+        tips(true, `[ E ] 获取系统配置失败，${configData ? configData.msg : '请确认该邮箱是否已授权'}`);
+    }
+}

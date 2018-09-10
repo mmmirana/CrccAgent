@@ -3,12 +3,14 @@ const BaseModel = require('../../base/model/BaseModel');
 class model extends BaseModel {
     /**
      * 插入隐患节点
+     * @param appid
      * @param yinHuanArr
      */
-    async insertYinhuanNodes(yinHuanArr) {
+    async insertYinhuanNodes(appid, yinHuanArr) {
         for (let i = 0; i < yinHuanArr.length; i++) {
             let yinHuan = yinHuanArr[i];
             let yinHuanModel = {
+                appid: appid,
                 text: yinHuan.text,
                 score: yinHuan.score,
                 danger_longname: yinHuan.danger_longname,
@@ -21,9 +23,12 @@ class model extends BaseModel {
                 json: JSON.stringify(yinHuan),
             };
 
-            let number = await super.count({"id": yinHuanModel.id});
+            let where = {"id": yinHuanModel.id};
+            let number = await super.count(where);
             if (number === 0) {
                 await super.insert(yinHuanModel);
+            } else {
+                await super.update(yinHuanModel, where);
             }
         }
     };

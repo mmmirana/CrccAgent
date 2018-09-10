@@ -3,12 +3,18 @@ let unitArr = [];// 获取所有的施工单位
 let genGroupNumber = 0;// 今日已生成的数据
 let submitGroupNumber = 0;// 今日已提交的数据
 
+// 登录以后，到达提交页面，获取appid和email
+let appid = storageutils.get("cp_appid");
+let email = storageutils.get("cp_email");
+
 $().ready(function () {
     var $draggable = $('#plugin_pop').draggabilly({
         // 选项（配置）...
         containment: true,
         handle: '.handle',
     });
+
+    initCfg(email);
 
     // 获取单位列表
     cp_post(cfg.crccBaseUrl + '/crcc/getAllUnit')
@@ -32,11 +38,12 @@ function submitDataOneKey() {
 
         // 生成数据正常，进行后续操作
         if (nextStep) {
-            let inst = mdui.confirm('一键提交数据？', function () {
-                // 关闭弹窗
-                inst.close();
-                // 提交数据，参数remain为要提交的组数
-                submitData(function (remain) {
+
+            // 提交数据，参数remain为要提交的组数
+            submitData(function (remain) {
+                let inst = mdui.confirm(`一键提交 ${remain} 组数据？`, function () {
+                    // 关闭弹窗
+                    inst.close();
 
                     let postdataData = cp_post_sync(cfg.crccBaseUrl + '/crcc/getRandomPostData', {itemNumber: remain});
                     if ((postdataData.code || 0) === 1) {
@@ -45,17 +52,17 @@ function submitDataOneKey() {
 
                         tips(true, '[ I ]获取到：' + postdataArr.length + ' 组数据，准备提交...');
                         submitSingleData(postdataArr, post_index);
-
                     }
+
+                }, function () {
+                    // 关闭弹窗
+                    inst.close();
+                    // 提示取消提交数据
+                    tips(true, '[ I ]您取消了提交数据');
+                }, {
+                    confirmText: '确定',
+                    cancelText: '取消',
                 });
-            }, function () {
-                // 关闭弹窗
-                inst.close();
-                // 提示取消提交数据
-                tips(true, '[ I ]您取消了提交数据');
-            }, {
-                confirmText: '确定',
-                cancelText: '取消',
             });
 
         } else {
@@ -129,7 +136,7 @@ function syncYinhuanNodesByNodes(pid) {
  * @returns {Promise<any>}
  */
 function uploadYinhuanNodes(textJson) {
-    return cp_post_sync(cfg.crccBaseUrl + '/crcc/updateYinhuanNodes', {textJson: textJson});
+    return cp_post_sync(cfg.crccBaseUrl + '/crcc/updateYinhuanNodes', {appid: appid, textJson: textJson});
 }
 
 /**
@@ -202,6 +209,7 @@ function submitSingleData(postdataArr, post_index) {
                 tips(true, '[ I ]更新插件服务器数据失败：' + updateReturn ? updateReturn.msg : '服务器错误');
             }
 
+            // 提交数据成功，继续下次提交
             let $img = $(window.frames[0].document).find("#randSaveImg");
             $img.click();
             setTimeout(function () {
@@ -287,37 +295,15 @@ function generateTodayData(cb) {
         } else {
             // 已经生成过了，确定是否继续生成
             if (genGroupNumber > 0) {
-                // 不再重新生成
-                // let inst = mdui.confirm('您今天已经生成了 ' + genGroupNumber + ' 组数据，是否重新生成？', function () {
-                //     // 关闭弹窗
-                //     inst.close();
-                //
-                //     tips(true, "[ I ]正在为您生成数据，请稍后...");
-                //     let genGroupNumAlreay = generateTodayDataFn();
-                //     tips(true, '[ I ]生成数据完毕, 共生成' + genGroupNumAlreay + '组数据');
-                //
-                //     cb(true);
-                //
-                // }, function () {
-                //     // 关闭弹窗
-                //     inst.close();
-                //
-                //     // 提示取消提交数据
-                //     tips(true, '[ I ]您取消了提交数据');
-                //
-                //     // 不再生成，告知可以继续
-                //     cb(true);
-                // }, {
-                //     confirmText: '确定',
-                //     cancelText: '取消',
-                // });
 
                 // 不再生成，告知可以继续
                 cb(true);
 
             } else {
                 tips(true, "[ I ]正在为您生成数据，请稍后...");
+                let loadingInst = cpLoading('准备提交数据', '正在准备要提交数据，请稍后...');
                 let genGroupNumAlreay = generateTodayDataFn();
+                loadingInst.close();
                 tips(true, '[ I ]生成数据完毕, 共生成' + genGroupNumAlreay + '组数据');
 
                 cb(true);
@@ -389,6 +375,8 @@ function generateTodayDataFn() {
                     let problems = problemsData.data;
 
                     for (let l = 0; l < problems.length; l++) {
+
+
                         // 隐患node 对应的问题
                         let problem = problems[l];
 
@@ -466,6 +454,7 @@ function uploadPostDataOnce({unitcode, nodecode, problemcode}, commonData, dirty
     tips(true, '正在生成第 ' + genGroupNumAlreay + ' 组数据');
     commonData.dirtydata = JSON.stringify(dirtyDataTempArr);
     let requestData = {
+        appid: appid,
         unitcode: unitcode,
         nodecode: nodecode,
         problemcode: problemcode,

@@ -15,7 +15,7 @@ RandomUtils.randomType = {
     letterLower: Math.pow(2, 1),
     letterUpper: Math.pow(2, 2),
     specialChar: Math.pow(2, 3),
-}
+};
 
 
 /**
@@ -44,7 +44,7 @@ RandomUtils.generateRandom = function (length, type) {
         str += arr[Math.round(Math.random() * (arr.length - 1))];
     }
     return str;
-}
+};
 
 /**
  * 生成固定长度的随机数字字符串
@@ -52,7 +52,7 @@ RandomUtils.generateRandom = function (length, type) {
  */
 RandomUtils.generateNumberStr = function (length) {
     return this.generateRandom(length, this.randomType.number);
-}
+};
 
 /**
  * 获取固定长度的随机小写字母的字符串
@@ -61,7 +61,7 @@ RandomUtils.generateNumberStr = function (length) {
  */
 RandomUtils.generateLowerLetter = function (length) {
     return this.generateRandom(length, this.randomType.letterLower);
-}
+};
 
 /**
  * 获取固定长度的随机小写字母的字符串
@@ -70,7 +70,7 @@ RandomUtils.generateLowerLetter = function (length) {
  */
 RandomUtils.generateUpperLetter = function (length) {
     return this.generateRandom(length, this.randomType.letterUpper);
-}
+};
 
 /**
  * 获取固定长度的随机字母的字符串
@@ -79,7 +79,7 @@ RandomUtils.generateUpperLetter = function (length) {
  */
 RandomUtils.generateLetter = function (length) {
     return this.generateRandom(length, this.randomType.letterLower + this.randomType.letterUpper);
-}
+};
 
 /**
  * 生成固定长度的随机字符串，字母+数字
@@ -88,8 +88,6 @@ RandomUtils.generateLetter = function (length) {
  */
 RandomUtils.generateLetterAndNumber = function (length) {
     return this.generateRandom(length, this.randomType.number + this.randomType.letterLower + this.randomType.letterUpper);
-}
-
-console.log(RandomUtils.generateRandom(32, RandomUtils.randomType.number + RandomUtils.randomType.letterUpper));
+};
 
 module.exports = RandomUtils;

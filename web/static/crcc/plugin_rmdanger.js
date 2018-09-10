@@ -1,15 +1,42 @@
+function testTips() {
+    let x = cpLoading("title", 'content, 2s 关闭');
+};
+
 /**
  * 一键消除隐患
  */
 function deldangerOnekey() {
+
+    let dangerlistInst = cpLoading("获取隐患列表", '正在获取隐患列表，请稍等...');
     //同步隐患列表
     syncdangerlist()
-        .then(function () {
-            // 消除所有隐患
-            deldangerByDay().then(function () {
-                tips("[ I ]已经为您消除隐患，请核查数据");
-            });
+        .then(function (listsize) {
+            dangerlistInst.close();
+
+            if (listsize === 0) {
+                mdui.alert("获取消除隐患列表数据为空，请先\"一键填报隐患\"...", "获取隐患列表成功", {
+                    confirmText: '确定',
+                    cancelText: '取消',
+                })
+            } else {
+                let deldangerInst = mdui.confirm("获取隐患列表成功，确定一键消除隐患？", function () {
+                    deldangerInst.close();
+                    // 消除所有隐患
+                    let delloading = cpLoading("消除隐患", '正在逐条消除隐患，请稍等...');
+                    deldangerByDay().then(function () {
+                        delloading.close();
+                        tips(true, "[ I ]已经为您消除隐患，请核查数据");
+                    });
+                }, function () {
+                    deldangerInst.close();
+                    tips(true, "[ I ] 您取消了消除隐患数据...");
+                }, {
+                    confirmText: '确定',
+                    cancelText: '取消',
+                })
+            }
         }).catch(function (e) {
+        tips(true, "[ E ]获取隐患列表异常，请稍后再试...")
     });
 
 
@@ -51,10 +78,14 @@ function syncdangerlist(begin, end) {
 
                     for (let i = 0; i < dangerlistGroup.length; i++) {
                         let dangerlistByGroup = dangerlistGroup[i];
-                        let uploadResult = cp_post_sync(cfg.crccBaseUrl + '/crcc/uploadDangerlist', {dangerlistJson: JSON.stringify(dangerlistByGroup)});
+                        let dangerlistByGroupData = {
+                            appid: appid,
+                            dangerlistJson: JSON.stringify(dangerlistByGroup)
+                        };
+                        let uploadResult = cp_post_sync(cfg.crccBaseUrl + '/crcc/uploadDangerlist', dangerlistByGroupData);
                         tips(true, `[ I ]第 ${i + 1} 次同步 ${dangerlistByGroup.length} 条隐患数据：${uploadResult ? uploadResult.msg : "服务器异常"}`);
                     }
-                    resolve();
+                    resolve(dangerlist.length);
 
                 });
         } catch (e) {
@@ -95,15 +126,19 @@ function deldangerByDay(someday) {
             getdangerlist(someday)
                 .then(function (dangerlist) {
                     tips(true, `[ I ]准备消除 ${dangerlist.length}条 隐患数据...`);
+                    let allDeldangerPromise = [];
                     for (let i = 0; i < dangerlist.length; i++) {
                         let danger = dangerlist[i];
                         // 消除隐患
-                        delSingleDanger(danger)
-                            .then(function (delResult) {
-                                tips(true, `消除 第${i}条 隐患结果：${(delResult.code || 0 === 1) ? '成功' : '失败'}`);
-                            });
+                        allDeldangerPromise.push(delSingleDanger(danger));
                     }
-                    resolve();
+                    Promise.all(allDeldangerPromise).then(function (result) {
+                        for (let i = 0; i < result.length; i++) {
+                            let delResult = result[i];
+                            tips(true, `[ I ]消除第 ${i + 1} 条隐患结果：${(delResult.code || 0 === 1) ? '成功' : '失败'}`);
+                        }
+                        resolve();
+                    });
                 });
         } catch (e) {
             reject(e);

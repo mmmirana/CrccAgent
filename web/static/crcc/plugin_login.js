@@ -1,3 +1,4 @@
+// 尝试登陆的次数
 let cp_login_num = 0;
 
 $().ready(function () {
@@ -5,20 +6,22 @@ $().ready(function () {
         // 选项（配置）...
         containment: true,
         handle: '.handle',
-    })
+    });
 });
 
+/**
+ * 一键登录
+ */
 function loginOnekey() {
-    cp_post(cfg.crccBaseUrl + '/crcc/getconfig', {
-        email: $("#email").val(),
-    }).then(function (configData) {
-        if (configData && configData.code === 1) {
-            let config = configData.data;
-            plugin_login(config);
-        } else {
-            tips(true, '[ E ]' + (configData ? configData.msg : '请确认邮箱已授权！'));
-        }
-    });
+
+    let email = $("#email").val();
+    // 初始化配置
+    let config = initCfg(email);
+
+    if (config) {
+        plugin_login(config);
+    }
+
 }
 
 
@@ -51,8 +54,6 @@ function plugin_login(config) {
                     appid: appid,
                     guserid: loginResult.userid,
                 };
-
-                storageutils.set("cp_gusername", username);
                 storageutils.set("cp_guserid", loginResult.userid);
 
                 cp_post(cfg.crccBaseUrl + '/crcc/updateConfigUserid', useridData)
