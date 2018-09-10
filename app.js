@@ -75,9 +75,14 @@ app.use(appmiddleware.fn);
 const routeloader = require('./app/_config/routeloader');
 routeloader.init(app);
 
+// 初始化路由映射
+const jobloader = require('./app/_config/jobloader');
+jobloader.run();
+
 // error-handling
 app.on('error', (err, ctx) => {
     console.error('server error', err, ctx)
 });
+
 
 module.exports = app

@@ -35,6 +35,9 @@ let cfg = {
         // 路由文件所在目录
         router: {
             filepattern: 'app/project/**/route*/*.js',
+        },
+        job: {
+            filepattern: 'app/project/job/**/job_*.js',
         }
     },
 

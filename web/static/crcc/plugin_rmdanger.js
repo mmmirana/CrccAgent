@@ -1,7 +1,3 @@
-function testTips() {
-    let x = cpLoading("title", 'content, 2s 关闭');
-};
-
 /**
  * 一键消除隐患
  */
@@ -115,6 +111,7 @@ function getdangerlist(someday) {
     });
 }
 
+
 /**
  * 消除某天的隐患
  * @param someday required 如果不传，则删除所有
@@ -126,19 +123,13 @@ function deldangerByDay(someday) {
             getdangerlist(someday)
                 .then(function (dangerlist) {
                     tips(true, `[ I ]准备消除 ${dangerlist.length}条 隐患数据...`);
-                    let allDeldangerPromise = [];
                     for (let i = 0; i < dangerlist.length; i++) {
                         let danger = dangerlist[i];
                         // 消除隐患
-                        allDeldangerPromise.push(delSingleDanger(danger));
+                        let delResult = delSingleDanger(danger);
+                        tips(true, `[ I ]消除第 ${i + 1} 条隐患结果：${(delResult.code || 0 === 1) ? '成功' : '失败'}`);
                     }
-                    Promise.all(allDeldangerPromise).then(function (result) {
-                        for (let i = 0; i < result.length; i++) {
-                            let delResult = result[i];
-                            tips(true, `[ I ]消除第 ${i + 1} 条隐患结果：${(delResult.code || 0 === 1) ? '成功' : '失败'}`);
-                        }
-                        resolve();
-                    });
+                    resolve(1);
                 });
         } catch (e) {
             reject(e);
@@ -151,51 +142,42 @@ function deldangerByDay(someday) {
  */
 function delSingleDanger(danger) {
 
-    return new Promise(function (resolve, reject) {
-        try {
-            let delsingleData = {
-                examine: "1",
-                userInfoId: "",
-                hasCheckPerson: true,
-                loginuserid: storageutils.get("cp_guserid"),
-            };
-            let dangerData = [{
-                "fprojectname": danger.fprojectname,
-                "funit": danger.funit,
-                "fprojecttypename": danger.fprojecttypename,
-                "project_unit_name": danger.project_unit_name,
-                "danger_longname": danger.danger_longname,
-                "troublename": danger.troublename,
-                "dangerdesc": danger.dangerdesc,
-                "checkinfo": "将发现的安全隐患已整改",
-                "checktime": danger.check_time,
-                "dangerstatus": "2",
-                "cp_troubleid": danger.cp_troubleid,
-                "pid": "",
-                "flgid": "0",
-                "windowid": "add"
-            }];
+    let delsingleData = {
+        examine: "1",
+        userInfoId: "",
+        hasCheckPerson: true,
+        loginuserid: storageutils.get("cp_guserid"),
+    };
 
-            delsingleData.dangerData = JSON.stringify(dangerData);
+    let dangerData = [{
+        "fprojectname": danger.fprojectname,
+        "funit": danger.funit,
+        "fprojecttypename": danger.fprojecttypename,
+        "project_unit_name": danger.project_unit_name,
+        "danger_longname": danger.danger_longname,
+        "troublename": danger.troublename,
+        "dangerdesc": danger.dangerdesc,
+        "checkinfo": "将发现的安全隐患已整改",
+        "checktime": danger.check_time,
+        "dangerstatus": "2",
+        "cp_troubleid": danger.cp_troubleid,
+        "pid": "",
+        "flgid": "0",
+        "windowid": "add"
+    }];
 
-            cp_post("http://aqgl.crcc.cn/safequality/corrective.do?reqCode=insertCorrective", delsingleData)
-                .then(function (resp) {
-                    if (resp && resp.success === true) {
-                        let rmdangerData = {
-                            dataid: resp.dataid,
-                            sid: danger.sid,
-                            sstatus: 1,// 消除隐患成功
-                        };
+    delsingleData.dangerData = JSON.stringify(dangerData);
 
-                        // 消除隐患成功更新状态
-                        cp_post(cfg.crccBaseUrl + "/crcc/rmdangerBySid", rmdangerData)
-                            .then(function (rmdangerResult) {
-                                resolve(rmdangerResult);
-                            })
-                    }
-                })
-        } catch (e) {
-            reject(e);
-        }
-    })
+    let resp = cp_post_sync("http://aqgl.crcc.cn/safequality/corrective.do?reqCode=insertCorrective", delsingleData);
+    if (resp && resp.success === true) {
+        let rmdangerData = {
+            dataid: resp.dataid,
+            sid: danger.sid,
+            sstatus: 1,// 消除隐患成功
+        };
+
+        // 消除隐患成功更新状态
+        let rmdangerResult = cp_post_sync(cfg.crccBaseUrl + "/crcc/rmdangerBySid", rmdangerData);
+        return (rmdangerResult);
+    }
 }
