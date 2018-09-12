@@ -16,12 +16,12 @@ jobloader.run = async function () {
         console.log('[ JOB ]正在加载任务', jobFile);
         let jobModel = await getJobModel(jobFile);
         if (jobModel) {
-            console.log('[ JOB ]运行任务', jobFile);
+            console.log(`[ JOB ]运行任务 =${jobModel.cron}= `, jobFile);
             let jobItem = require(path.relative(__dirname, jobFile));
             jobItem.runJob({
                 groupname: jobModel.groupname,
                 jobname: jobModel.jobname,
-                cron: jobModel.cron,
+                cron: ,
             });
         }
     });
