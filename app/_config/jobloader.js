@@ -21,7 +21,7 @@ jobloader.run = async function () {
             jobItem.runJob({
                 groupname: jobModel.groupname,
                 jobname: jobModel.jobname,
-                cron: ,
+                cron: jobModel.cron,
             });
         }
     });
