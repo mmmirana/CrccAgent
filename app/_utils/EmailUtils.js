@@ -57,7 +57,8 @@ EmailUtils.send = async function (emailOps) {
                 auth: {
                     user: fromEmailModel.email,
                     pass: fromEmailModel.authcode,
-                }
+                },
+                connectionTimeout: 30 * 1000,// 超时时间30s
             };
 
             let transporter = nodemailer.createTransport(ops);
