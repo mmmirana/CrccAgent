@@ -4,11 +4,11 @@ const basic_configModel = require('../model/basic_configModel');
 const basic_unitModel = require('../model/basic_unitModel');
 const basic_nodeModel = require('../model/basic_nodeModel');
 const basic_problemModel = require('../model/basic_problemModel');
+const basic_postdataModel = require('../model/basic_postdataModel');
 const yinhuan_postdataModel = require('../model/yinhuan_postdataModel');
 const yinhuan_rmdangerModel = require('../model/yinhuan_rmdangerModel');
 const ResultUtils = require('../../../_utils/ResultUtils');
 const DateUtils = require('../../../_utils/DateUtils');
-const FileUtils = require('../../../_utils/FileUtils');
 
 router.prefix('/crcc');
 
@@ -44,16 +44,12 @@ router.post('/getconfig', async function (ctx, next) {
                 if (auth.enable === 0) {
                     result = ResultUtils.errorMsg('该邮箱尚未授权');
                 } else {
-                    let configData = await basic_configModel.select({appid: auth.appid});
+                    let configData = await basic_configModel.select({appid: auth.appid, enable: 1});
                     if (configData && configData.length > 0) {
                         let config = configData[0];
-                        if (config.enable === 0) {
-                            result = ResultUtils.errorMsg('该邮箱的应用未启用');
-                        } else {
-                            result = ResultUtils.successData(config);
-                        }
+                        result = ResultUtils.successData(config);
                     } else {
-                        result = ResultUtils.errorMsg('该邮箱的应用尚未配置');
+                        result = ResultUtils.errorMsg('该邮箱的应用尚未配置或尚未启用');
                     }
                 }
             } else {
@@ -111,12 +107,35 @@ router.post('/updateYinhuanNodes', async function (ctx, next) {
     }
 });
 
+
+/**
+ * 上传隐患节点数据
+ */
+router.post('/syncNodes', async function (ctx, next) {
+    let appid = ctx.parameters.appid;
+    let textJson = ctx.parameters.textJson;
+    if (textJson) {
+        try {
+            let yinHuanNodes = JSON.parse(textJson);
+            await basic_nodeModel.insertYinhuanNodes(appid, yinHuanNodes);
+
+            ctx.body = ResultUtils.successMsg('上传成功');
+        } catch (e) {
+            ctx.body = ResultUtils.errorMsg(e.toString());
+        }
+
+    } else {
+        ctx.body = ResultUtils.errorMsg('缺失参数textJson');
+    }
+});
+
 /**
  * 获取所有的单位
  */
 router.post('/getAllUnit', async function (ctx, next) {
     try {
-        let data = await basic_unitModel.select();
+        let appid = ctx.parameters.appid;
+        let data = await basic_unitModel.select({appid: appid});
         ctx.body = ResultUtils.successData(data);
     } catch (e) {
         ctx.body = ResultUtils.errorMsg(e.toString());
@@ -128,14 +147,21 @@ router.post('/getAllUnit', async function (ctx, next) {
  */
 router.post('/getLastNodes', async function (ctx, next) {
     try {
-        let data = await basic_nodeModel.query(`SELECT
+
+        let appid = ctx.parameters.appid;
+
+        let sql = `SELECT
 	* 
 FROM
 	basic_nodes t 
 WHERE
 	1 = 1 
+	AND t.appid = ?
 	AND LEFT ( t.id, 12 ) != '000005000001' 
-	AND LENGTH( t.id ) = 24`, []);
+	AND LENGTH( t.id ) = ? `;
+        let params = [appid, 24];
+
+        let data = await basic_nodeModel.query(sql, params);
         ctx.body = ResultUtils.successData(data);
     } catch (e) {
         ctx.body = ResultUtils.errorMsg(e.toString());
@@ -157,9 +183,9 @@ router.post('/getProblemByNodeid', async function (ctx, next) {
 });
 
 /**
- * 上传今日某隐患对应的 问题名称列表
+ * 上传某appid下的基础提交数据
  */
-router.post('/uploadPostData', async function (ctx, next) {
+router.post('/uploadBasicPostData', async function (ctx, next) {
     try {
 
         let postDataModel = {};
@@ -188,33 +214,22 @@ router.post('/uploadPostData', async function (ctx, next) {
         }
 
         // 1、先查找当前是否有数据
-        let countSql = `SELECT
-	count( 1 ) AS count 
-FROM
-	yinhuan_postdata t 
-WHERE
-	1 = 1 
-	AND t.unitcode =? 
-	AND t.nodecode =? 
-	AND t.problemcode =? 
-	AND DATE_FORMAT( t.create_time, '%Y-%m-%d' ) = ?`;
-        let countParams = [];
-        countParams.push(postDataModel.unitcode);
-        countParams.push(postDataModel.nodecode);
-        countParams.push(postDataModel.problemcode);
-        countParams.push(DateUtils.format(new Date(), 'yyyy-MM-dd'));
+        let where = {
+            appid: postDataModel.appid,
+            unitcode: postDataModel.unitcode,
+            nodecode: postDataModel.nodecode,
+            problemcode: postDataModel.problemcode,
+        };
 
-        let countData = await yinhuan_postdataModel.query(countSql, countParams);
+        let count = await basic_postdataModel.count(where);
 
         // 没有数据插入
-        if (countData[0].count === 0) {
-            let result = await yinhuan_postdataModel.insert(postDataModel);
+        if (count === 0) {
+            let result = await basic_postdataModel.insert(postDataModel);
             ctx.body = ResultUtils.successData(result.affectedRows);
         } else {
             ctx.body = ResultUtils.successData("已有数据，不再新增");
         }
-
-
     } catch (e) {
         ctx.body = ResultUtils.errorMsg(e.toString());
     }
@@ -240,9 +255,10 @@ router.post('/getRandomPostData', async function (ctx, next) {
  */
 router.post('/getSomedayData', async function (ctx, next) {
     try {
+        let appid = ctx.parameters.appid;
         let ymd = ctx.parameters.ymd || DateUtils.format(new Date, "yyyy-MM-dd");
 
-        let data = {genNumber, submitNumber} = await yinhuan_postdataModel.getSomedayData(ymd);
+        let data = {genNumber, submitNumber} = await yinhuan_postdataModel.getSomedayData(appid, ymd);
 
         ctx.body = ResultUtils.successData(data);
     } catch (e) {
@@ -302,7 +318,7 @@ router.post('/uploadDangerlist', async function (ctx) {
             let count = await yinhuan_rmdangerModel.count(dangerModel);
             if (count === 0) {
                 let insertResult = await yinhuan_rmdangerModel.insert(dangerModel);
-                console.log(insertResult);
+                console.log("同步消除隐患数据结果，" + JSON.stringify(insertResult));
             }
         }
         ctx.body = ResultUtils.successMsg("上传成功");
@@ -348,6 +364,177 @@ router.post('/rmdangerBySid', async function (ctx) {
         ctx.body = ResultUtils.successData(result);
     } catch (e) {
         ctx.body = ResultUtils.errorMsg("获取消除隐患列表异常" + e.toString());
+    }
+});
+
+/**
+ * 同步施工单位
+ */
+router.post('/syncUnit', async function (ctx) {
+    try {
+        let appid = ctx.parameters.appid;
+        let unitJson = ctx.parameters.unitJson;
+
+        let dangerids = [];
+
+        let unitArr = JSON.parse(unitJson);
+        for (let i = 0; i < unitArr.length; i++) {
+            let unitItem = unitArr[i];
+            unitItem.appid = appid;
+            let findWhere = {
+                appid: appid,
+                value: unitItem.value,
+            };
+            let count = await basic_unitModel.count(findWhere);
+            let result = {};
+            if (count === 0) {
+                result = await basic_unitModel.insert(unitItem);
+            } else {
+                result = await basic_unitModel.update(unitItem, findWhere);
+            }
+            console.log("同步第" + (i + 1) + "条施工单位数据：" + JSON.stringify(result));
+
+            // 将dangerid放入dangerids
+            let dangerid = unitItem.dangerid;
+            if (dangerid && dangerids.indexOf(dangerid) === -1) {
+                dangerids.push(dangerid);
+            }
+        }
+        ctx.body = ResultUtils.success({"dangerids": dangerids}, "同步施工单位数据成功");
+    } catch (e) {
+        ctx.body = ResultUtils.errorMsg("同步施工单位数据异常" + e.toString());
+    }
+});
+
+/**
+ * 获取初始化的数据条目数
+ */
+router.post('/getInitCrccData', async function (ctx) {
+    try {
+        let appid = ctx.parameters.appid;
+        let where = {
+            appid: appid
+        };
+        let unitNum = await basic_unitModel.count(where);
+        let nodeNum = await basic_nodeModel.count(where);
+        let problemNum = await basic_problemModel.count(where);
+
+        let initData = {
+            unitNum,// 单位数量
+            nodeNum,// 隐患节点数量
+            problemNum,// 隐患问题数量
+        };
+
+        ctx.body = ResultUtils.success(initData, "获取初始化数据条目成功");
+    } catch (e) {
+        ctx.body = ResultUtils.errorMsg("获取初始化数据条目异常，" + e.toString());
+    }
+});
+
+
+/**
+ * 生成今日要提交的数据
+ */
+router.post("/genTodaySubmitData", async function (ctx) {
+    try {
+        let appid = ctx.parameters.appid;
+        let number = ctx.parameters.number || 0;
+        number = number * 1;
+        let notinUnitValueJson = ctx.parameters.notinUnitValueJson = "[]";
+
+        let notinUnitValueArr = JSON.parse(notinUnitValueJson);
+        let nowDate = DateUtils.format(new Date(), 'yyyy-MM-dd');
+
+        // 查询当天已有的postdatasid
+        let havePostIdsSql = `SELECT DISTINCT
+        ( t.postdatasid ) 
+    FROM
+        yinhuan_postdata t 
+    WHERE
+        1 = 1 
+        AND t.appid = ?
+        AND t.posttime = ?`;
+        let havePostIdsParams = [appid, nowDate];
+
+        let postSidsResult = await yinhuan_postdataModel.query(havePostIdsSql, havePostIdsParams);
+        let postSids = postSidsResult.map(function (v) {
+            return v.postdatasid;
+        });
+
+        // 随机选择的basic_postdata
+        let pickPostdataSql = `SELECT
+        t.* 
+    FROM
+        basic_postdata t 
+    WHERE
+        1 = 1 
+        AND t.appid = ? `;
+        let pickPostdataParams = [];
+        pickPostdataParams.push(appid);
+
+        if (notinUnitValueArr.length > 0) {
+            pickPostdataSql += ` AND t.unitcode NOT IN ( ? )`;
+            pickPostdataParams.push(notinUnitValueArr);
+        }
+        if (postSidsResult.length > 0) {
+            pickPostdataSql += ` AND t.sid NOT IN ( ? ) `;
+            pickPostdataParams.push(postSids);
+        }
+        pickPostdataSql += `ORDER BY RAND() LIMIT ?`;
+        pickPostdataParams.push(number);
+
+        let dbResult = await yinhuan_postdataModel.query(pickPostdataSql, pickPostdataParams);
+
+        // 遍历，入库yinhuan_postdata
+        for (let i = 0; i < dbResult.length; i++) {
+            // 重置data
+            let basic_postdataRow = dbResult[i];
+            let basic_postdataRow_dataJson = basic_postdataRow.data;
+            let basic_postdataRow_dataObj = JSON.parse(basic_postdataRow_dataJson);
+            let dirtydataJson = basic_postdataRow_dataObj.dirtydata;
+            let dirtydataObj = JSON.parse(dirtydataJson);
+
+            let dirtydataArr = [];
+            for (let j = 0; j < dirtydataObj.length; j++) {
+                let item = dirtydataObj[j];
+                item.discoverydate = nowDate;
+                item.handledate = nowDate + "T00:00:00";
+                dirtydataArr.push(item);
+            }
+
+            let postdata_data = Object.assign(basic_postdataRow_dataObj, {
+                dirtydata: JSON.stringify(dirtydataArr)
+            });
+
+            let where = {
+                appid: appid,
+                postdatasid: basic_postdataRow.sid,
+                posttime: nowDate,
+            };
+
+            // 要新增的rowuploadDangerlist
+            let postdataRow = Object.assign(where, {
+                postdata: JSON.stringify(postdata_data),
+            });
+
+            let count = await yinhuan_postdataModel.count(where);
+            let dbresult = {};
+            if (count === 0) {
+                dbresult = await yinhuan_postdataModel.insert(postdataRow);
+            } else {
+                dbresult = await yinhuan_postdataModel.update(postdataRow, where);
+            }
+            console.log(`basic_postdata[ ${basic_postdataRow.sid} ] ==> yinhuan_postdata ` + JSON.stringify(dbresult))
+        }
+
+        let postdataRowList = await yinhuan_postdataModel.select({
+            appid: appid,
+            posttime: nowDate,
+            status: 0,
+        });
+        ctx.body = ResultUtils.success(postdataRowList, "生成提交数据成功");
+    } catch (e) {
+        ctx.body = ResultUtils.errorMsg("生成提交数据异常，" + e.toString());
     }
 });
 

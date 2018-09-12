@@ -2,7 +2,7 @@
 let cp_login_num = 0;
 
 $().ready(function () {
-    var $draggable = $('#plugin_pop').draggabilly({
+    $('#plugin_pop').draggabilly({
         // 选项（配置）...
         containment: true,
         handle: '.handle',
@@ -14,9 +14,8 @@ $().ready(function () {
  */
 function loginOnekey() {
 
-    let email = $("#email").val();
     // 初始化配置
-    let config = initCfg(email);
+    let config = initCfg($("#email").val());
 
     if (config) {
         plugin_login(config);
@@ -50,17 +49,19 @@ function plugin_login(config) {
 
         cp_post("http://aqgl.crcc.cn/login.do?reqCode=login", loginData).then(function (loginResult) {
             if (loginResult.success === true) {
+
+                window.storageutils.set("cp_guserid", loginResult.userid);
+
                 let useridData = {
-                    appid: appid,
+                    appid: window.storageutils.get("cp_appid"),
                     guserid: loginResult.userid,
                 };
-                storageutils.set("cp_guserid", loginResult.userid);
 
                 cp_post(cfg.crccBaseUrl + '/crcc/updateConfigUserid', useridData)
                     .then(function (updateUseridResult) {
                         tips(false, '[ I ]更新插件服务器数据结果: ' + JSON.stringify(updateUseridResult));
-                        tips(true, '[ I ]正在跳转隐患填报页面，请稍后...');
 
+                        tips(true, '[ I ]正在跳转隐患填报页面，请稍后...');
                         setTimeout(function () {
                             // window.location.href = "http://aqgl.crcc.cn/safequality/troubledvr.do?reqCode=troubledvrWriteInit1&menuid4Log=01050501";
                             window.location.href = "http://aqgl.crcc.cn/index.do?reqCode=indexInit";

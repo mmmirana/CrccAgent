@@ -10,10 +10,7 @@ function deldangerOnekey() {
             dangerlistInst.close();
 
             if (listsize === 0) {
-                mdui.alert("获取消除隐患列表数据为空，请先\"一键填报隐患\"...", "获取隐患列表成功", {
-                    confirmText: '确定',
-                    cancelText: '取消',
-                })
+                mdui.alert("获取消除隐患列表数据为空，请先\"一键填报隐患\"...", "获取隐患列表成功", null, null, mduiOpt);
             } else {
                 let deldangerInst = mdui.confirm(`获取隐患列表成功，确定一键消除 ${listsize} 条隐患？`, function () {
                     deldangerInst.close();
@@ -26,16 +23,11 @@ function deldangerOnekey() {
                 }, function () {
                     deldangerInst.close();
                     tips(true, "[ I ] 您取消了消除隐患数据...");
-                }, {
-                    confirmText: '确定',
-                    cancelText: '取消',
-                })
+                }, mduiOpt)
             }
         }).catch(function (e) {
         tips(true, "[ E ]获取隐患列表异常，请稍后再试...")
     });
-
-
 }
 
 /**
@@ -53,7 +45,7 @@ function syncdangerlist(begin, end) {
             let postdangerlistData = {
                 begintTime: "",
                 endTime: "",
-                loginuserid: storageutils.get("cp_guserid")
+                loginuserid: cp_guserid
             };
             cp_post(postdangerlistUrl, postdangerlistData, 'text')
                 .done(function (dangerlistJson) {
@@ -64,18 +56,13 @@ function syncdangerlist(begin, end) {
 
                     tips(true, `[ I ]正在同步 ${dangerlist.length} 条要消除的隐患数据`);
 
-                    // 100条分批次上传
-                    let groupsize = 100;
-
-                    let dangerlistGroup = [];
-                    for (let i = 0, len = dangerlist.length; i < len; i += groupsize) {
-                        dangerlistGroup.push(dangerlist.slice(i, i + groupsize));
-                    }
+                    // 100条一组，批次上传
+                    let dangerlistGroup = groupArrayBySize(dangerlist, 100);
 
                     for (let i = 0; i < dangerlistGroup.length; i++) {
                         let dangerlistByGroup = dangerlistGroup[i];
                         let dangerlistByGroupData = {
-                            appid: appid,
+                            appid: cp_appid,
                             dangerlistJson: JSON.stringify(dangerlistByGroup)
                         };
                         let uploadResult = cp_post_sync(cfg.crccBaseUrl + '/crcc/uploadDangerlist', dangerlistByGroupData);
@@ -146,7 +133,7 @@ function delSingleDanger(danger) {
         examine: "1",
         userInfoId: "",
         hasCheckPerson: true,
-        loginuserid: storageutils.get("cp_guserid"),
+        loginuserid: cp_guserid,
     };
 
     let dangerData = [{

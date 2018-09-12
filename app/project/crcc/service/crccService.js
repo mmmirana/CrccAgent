@@ -3,6 +3,8 @@ let MysqlUtils = require('../../../_utils/MysqlUtils');
 let service = {};
 
 service.readYinhuanProblem = async function (filepath) {
+    let index = 0;// index
+
     let yinhuanArr = [];
 
     let yinhuanItem = {
@@ -60,16 +62,18 @@ service.readYinhuanProblem = async function (filepath) {
                 yinhuanProblemItem = Object.assign(yinhuanProblemItem, {
                     node_sid: yinhuanNode.sid,
                     node_id: yinhuanNode.id,
+                    appid: yinhuanNode.appid,
                     node_name: yinhuanNode.danger_longname,
                 });
 
-                await MysqlUtils.insert('yinhuan_problem', yinhuanProblemItem);
+                let result = await MysqlUtils.insert('basic_problem', yinhuanProblemItem);
+                console.log(++index, JSON.stringify(result));
             }
         }
     }
 }
 
-// 将隐患从Excel导入数据库
+// // 将隐患从Excel导入数据库
 // service.readYinhuanProblem('F:\\Project\\郭浩\\安全隐患库.xlsx')
 //     .then(function (data) {
 //         console.log('success');
@@ -77,21 +81,13 @@ service.readYinhuanProblem = async function (filepath) {
 //     console.log(e);
 // });
 
-async function readUnit() {
-    let unitJson = '[{"dangername":"房建","text":"融创项目北区1期12#、13#地块3#楼西段","teamid":null,"checkman":"李富泽","workteam":"山西中铁建筑劳务有限公司","safetyphone":"13653653229","value":101072,"dangerid":"000005"},{"dangername":"房建","text":"融创项目北区1期12#、13#地块6#楼西段","teamid":null,"checkman":"廖家全","workteam":"陕西新通达建筑工程有限公司","safetyphone":"18991891105","value":101082,"dangerid":"000005"},{"dangername":"房建","text":"融创项目北区1期12#、13#地块4#楼东段","teamid":null,"checkman":"汤国平","workteam":"山西中铁建筑劳务有限公司","safetyphone":"15934133558","value":101076,"dangerid":"000005"},{"dangername":"房建","text":"融创项目北区1期12#、13#地块1#楼东段","teamid":null,"checkman":"汤国平","workteam":"山西中铁盛达劳务有限公司","safetyphone":"15934133558","value":101051,"dangerid":"000005"},{"dangername":"房建","text":"融创项目北区1期12#、13#地块2#楼东段","teamid":null,"checkman":"汤国平","workteam":"山西中铁建筑劳务有限公司","safetyphone":"15934133558","value":101065,"dangerid":"000005"},{"dangername":"房建","text":"融创项目北区1期12#、13#地块5#楼东段","teamid":null,"checkman":"汤国平","workteam":"山西中铁建筑劳务有限公司","safetyphone":"15934133558","value":101078,"dangerid":"000005"},{"dangername":"房建","text":"融创项目北区1期12#、13#地块6#楼东段","teamid":null,"checkman":"廖家全","workteam":"陕西新通达建筑工程有限公司","safetyphone":"18991891105","value":101081,"dangerid":"000005"},{"dangername":"房建","text":"融创项目北区1期12#、13#地块1#楼西段","teamid":null,"checkman":"汤国平","workteam":"山西中铁盛达劳务有限公司","safetyphone":"15934133558","value":101058,"dangerid":"000005"},{"dangername":"房建","text":"融创项目北区1期12#、13#地块5#西段","teamid":null,"checkman":"汤国平","workteam":"山西中铁建筑劳务有限公司","safetyphone":"15934133558","value":101079,"dangerid":"000005"},{"dangername":"房建","text":"融创项目北区1期12#、13#地块3#楼东段","teamid":null,"checkman":"李富泽","workteam":"山西中铁建筑劳务有限公司","safetyphone":"13653653229","value":101068,"dangerid":"000005"},{"dangername":"房建","text":"融创项目北区1期12#、13#地块2#西段","teamid":null,"checkman":"汤国平","workteam":"山西中铁建筑劳务有限公司","safetyphone":"15934133558","value":101067,"dangerid":"000005"},{"dangername":"房建","text":"融创项目北区1期12#、13#地块4#楼西段","teamid":null,"checkman":"汤国平","workteam":"山西中铁建筑劳务有限公司","safetyphone":"15934133558","value":101077,"dangerid":"000005"}]';
-    let unitArr = JSON.parse(unitJson);
-    for (let i = 0; i < unitArr.length; i++) {
-        let unitItem = unitArr[i];
-        let result = await MysqlUtils.insert('yinhuan_unit', unitItem);
-        console.log(result);
-    }
+/**
+ * 获取随机数
+ * @param min 最小值
+ * @param max 最大值
+ */
+function getRandom(min, max) {
+    return (Math.random() * (max - min) + min).toFixed(0);
 }
-
-readUnit().then(function (data) {
-    console.log('success', data);
-}).catch(function (e) {
-    console.log(e);
-});
-
 
 module.exports = service;

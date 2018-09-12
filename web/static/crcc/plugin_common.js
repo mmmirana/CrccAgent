@@ -1,4 +1,9 @@
 let cp_msgStack = [];
+let mduiOpt = {
+    confirmText: '确定',
+    cancelText: '取消',
+    modal: true,//模态化窗口，点击外部不能关闭
+};
 
 /**
  * post请求
@@ -12,7 +17,7 @@ function cp_get(url, data, dataType) {
         url: url,
         type: 'get',
         data: data,
-        dataType: dataType || 'text',
+        dataType: dataType || 'json',
         success: function (rep) {
             defer.resolve(rep);
         },
@@ -101,14 +106,14 @@ function resolveCode($img) {
     if (codeData && codeData.code === 1) {
         return codeData.data;
     } else {
-        tips(true, '解析验证码异常：' + JSON.stringify(codeData));
+        tips(true, '[ E ]解析验证码异常');
         return "";
     }
 }
 
 function getBase64Image($img) {
     if ($img.length === 0) {
-        tips(true, '抱歉，找不到对应的验证码');
+        tips(true, '[ E ]抱歉，找不到对应的验证码');
         return;
     }
     try {
@@ -122,7 +127,7 @@ function getBase64Image($img) {
         let dataURL = canvas.toDataURL("image/" + ext);
         return dataURL;
     } catch (e) {
-        tips(true, '抱歉，验证码异常，请手动刷新。');
+        tips(true, '[ E ]抱歉，验证码异常。');
         return '';
     }
 }
@@ -139,7 +144,7 @@ function testCrccAgent() {
             tips(true, '[ I ]插件服务器正常，请放心进行后续操作！');
         },
         error: function () {
-            tips(true, '[ E ]抱歉，服务器异常，请联系QQ420039341');
+            tips(true, '[ E ]抱歉，服务器异常，请联系mmmirana@qq.com');
         }
     })
 }
@@ -206,9 +211,9 @@ function initCfg(email) {
         let config = configData.data;
 
         // 将邮对应的appid，username和email放入localstorage
-        storageutils.set("cp_appid", config.appid);
-        storageutils.set("cp_email", email);
-        storageutils.set("cp_gusername", config.username);
+        window.storageutils.set("cp_appid", config.appid);
+        window.storageutils.set("cp_email", email);
+        window.storageutils.set("cp_gusername", config.username);
 
         window.cfg = {
             crccBaseUrl: config.crccBaseUrl,
@@ -217,11 +222,32 @@ function initCfg(email) {
             cp_tipsLength: config.cp_tipsLength,
             cp_totalpage: config.cp_totalpage,
             crcctitle: config.crcctitle,
-            solution: config.solution
+            solution: JSON.parse(config.solution),
         };
         tips(true, `[ I ] 获取系统配置成功`);
         return config;
     } else {
         tips(true, `[ E ] 获取系统配置失败，${configData ? configData.msg : '请确认该邮箱是否已授权'}`);
     }
+}
+
+/**
+ * ajax返回数据，获取错误信息
+ * @param result
+ * @return {string}
+ */
+function getResultErrorMsg(result) {
+    return result ? result.msg : '插件服务器异常';
+}
+
+/**
+ * 将数组arr分组，每组的长度groupsize
+ */
+function groupArrayBySize(arr, groupsize) {
+    groupsize = groupsize || 100;
+    let groupArr = [];
+    for (let i = 0, len = arr.length; i < len; i += groupsize) {
+        groupArr.push(arr.slice(i, i + groupsize));
+    }
+    return groupArr;
 }

@@ -1,4 +1,6 @@
 const fs = require('fs');
+const fsExt = require('fs-extra')
+
 const path = require('path');
 const appcfg = require('../_config/appcfg');
 
@@ -287,5 +289,14 @@ FileUtils.getChildFilepath = function (rootdir, recursive) {
     }
     return childFilepathArr;
 }
+
+/**
+ * 删除绝对路径
+ * like rm -rf
+ * @param dirpath
+ */
+FileUtils.deleteAsbpath = function (filepath) {
+    fsExt.removeSync(filepath);
+};
 
 module.exports = FileUtils;

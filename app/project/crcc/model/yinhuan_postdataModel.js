@@ -4,27 +4,31 @@ class model extends BaseModel {
     /**
      * 查询已提交的组数
      *
+     * @param appid
      * @param ymd
      * @returns {Promise<*|number>}
      */
-    async getSomedayData(ymd) {
+    async getSomedayData(appid, ymd) {
         let genSql = `SELECT
-	count( 1 )  as count
+	count( 1 ) AS count 
 FROM
 	yinhuan_postdata t 
 WHERE
 	1 = 1 
-	AND DATE_FORMAT( t.create_time, "%Y-%m-%d" ) = ?`;
-        let submitSql = `SELECT
-	count( 1 )  as count
-FROM
-	yinhuan_postdata t 
-WHERE
-	1 = 1 
-	AND t.\`status\` = 3
-	AND DATE_FORMAT( t.create_time, "%Y-%m-%d" ) = ?`;
+	AND t.appid = ?
+	AND t.posttime = ?`;
 
-        let params = [ymd];
+        let submitSql = `SELECT
+	count( 1 ) AS count 
+FROM
+	yinhuan_postdata t 
+WHERE
+	1 = 1 
+	AND t.\`status\` = 1
+	AND t.appid = ? 
+	AND t.posttime = ?`;
+
+        let params = [appid, ymd];
 
         // 生成数据统计
         let genResult = await super.query(genSql, params);
@@ -35,7 +39,7 @@ WHERE
         let submitNumber = submitResult[0].count || 0;
 
 
-        return {genNumber, submitNumber,};
+        return {genNumber, submitNumber};
     }
 
     /**

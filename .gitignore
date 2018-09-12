@@ -4,4 +4,4 @@ node_modules/
 *.swp
 package-lock.json
 web/_*
-
+app/_config/appcfg_online.js
