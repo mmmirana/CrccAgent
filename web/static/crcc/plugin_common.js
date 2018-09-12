@@ -182,8 +182,7 @@ function plugin_logout() {
  * 插件加载中
  */
 function cpLoading(title, content) {
-    let customLoading = $("#customLoading");
-    var inst = new mdui.Dialog('#customLoading');
+    let inst = new mdui.Dialog('#customLoading');
     if (title) {
         $("#customLoading .mdui-dialog-title").text(title);
     } else {
