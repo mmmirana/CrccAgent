@@ -9,7 +9,7 @@ $().ready(function () {
     });
 
     // 如果storage中有授权邮箱，就获取到到邮箱
-    let cp_email = window.storageutils.get('cp_emall');
+    let cp_email = window.storageutils.get('cp_email');
     if (cp_email) $("#cp_email").val(cp_email);
 });
 

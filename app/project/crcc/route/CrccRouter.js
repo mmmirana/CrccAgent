@@ -447,12 +447,12 @@ router.post("/genTodaySubmitData", async function (ctx) {
         let notinUnitValueArr = JSON.parse(notinUnitValueJson);
 
         let nowDate = new Date();// 今天
-        let basicConfigData = basic_configModel.selectOne({appid: appid, enable: 1});
+        let nowDateStr = DateUtils.format(nowDate, 'yyyy-MM-dd');
+
+        let basicConfigData = await basic_configModel.selectOne({appid: appid, enable: 1});
         let cycleDay = (basicConfigData.cp_cycle_day || 7) * 1;
         let lastCycleDate = nowDate;// 上周期的最后一天
         lastCycleDate.setDate(lastCycleDate.getDate() - cycleDay)
-
-        let nowDateStr = DateUtils.format(nowDate, 'yyyy-MM-dd');
         let lastCycleDateStr = DateUtils.format(lastCycleDate, 'yyyy-MM-dd');
 
         // 查询当天已有的postdatasid
@@ -509,8 +509,8 @@ router.post("/genTodaySubmitData", async function (ctx) {
             let dirtydataArr = [];
             for (let j = 0; j < dirtydataObj.length; j++) {
                 let item = dirtydataObj[j];
-                item.discoverydate = nowDate;
-                item.handledate = nowDate + "T00:00:00";
+                item.discoverydate = nowDateStr;
+                item.handledate = nowDateStr + "T00:00:00";
                 dirtydataArr.push(item);
             }
 
@@ -521,7 +521,7 @@ router.post("/genTodaySubmitData", async function (ctx) {
             let where = {
                 appid: appid,
                 postdatasid: basic_postdataRow.sid,
-                posttime: nowDate,
+                posttime: nowDateStr,
             };
 
             // 要新增的rowuploadDangerlist
@@ -541,7 +541,7 @@ router.post("/genTodaySubmitData", async function (ctx) {
 
         let postdataRowList = await yinhuan_postdataModel.select({
             appid: appid,
-            posttime: nowDate,
+            posttime: nowDateStr,
             status: 0,
         });
         ctx.body = ResultUtils.success(postdataRowList, "生成提交数据成功");
