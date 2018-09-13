@@ -88,6 +88,7 @@ router.post('/updateConfigUserid', async function (ctx, next) {
 
 /**
  * 更新隐患节点数据
+ * @deprecated 使用syncNodes方法同步隐患节点
  */
 router.post('/updateYinhuanNodes', async function (ctx, next) {
     let appid = ctx.parameters.appid;
@@ -237,6 +238,7 @@ router.post('/uploadBasicPostData', async function (ctx, next) {
 
 /**
  * 随机获取几条记录
+ * @deprecated 不再每天生成所有数据后再 获取随机数据，调整为genTodaySubmitData
  */
 router.post('/getRandomPostData', async function (ctx, next) {
     try {
@@ -443,7 +445,15 @@ router.post("/genTodaySubmitData", async function (ctx) {
         let notinUnitValueJson = ctx.parameters.notinUnitValueJson = "[]";
 
         let notinUnitValueArr = JSON.parse(notinUnitValueJson);
-        let nowDate = DateUtils.format(new Date(), 'yyyy-MM-dd');
+
+        let nowDate = new Date();// 今天
+        let basicConfigData = basic_configModel.selectOne({appid: appid, enable: 1});
+        let cycleDay = (basicConfigData.cp_cycle_day || 7) * 1;
+        let lastCycleDate = nowDate;// 上周期的最后一天
+        lastCycleDate.setDate(lastCycleDate.getDate() - cycleDay)
+
+        let nowDateStr = DateUtils.format(nowDate, 'yyyy-MM-dd');
+        let lastCycleDateStr = DateUtils.format(lastCycleDate, 'yyyy-MM-dd');
 
         // 查询当天已有的postdatasid
         let havePostIdsSql = `SELECT DISTINCT
@@ -453,8 +463,10 @@ router.post("/genTodaySubmitData", async function (ctx) {
     WHERE
         1 = 1 
         AND t.appid = ?
-        AND t.posttime = ?`;
-        let havePostIdsParams = [appid, nowDate];
+        AND t.posttime <= ?
+        AND t.posttime > ?`;
+
+        let havePostIdsParams = [appid, nowDateStr, lastCycleDateStr];
 
         let postSidsResult = await yinhuan_postdataModel.query(havePostIdsSql, havePostIdsParams);
         let postSids = postSidsResult.map(function (v) {

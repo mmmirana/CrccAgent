@@ -1,0 +1,36 @@
+div#plugin_pop {
+    z-index: 10000;
+    position: fixed;
+    right: 50px;
+    top: 50px;
+    min-width: 150px;
+    max-width: 250px;
+    min-height: 150px;
+    border: 1px solid lightskyblue;
+    background: aliceblue;
+}
+
+div#tips {
+    font-size: 10px;
+    color: darkorchid;
+}
+
+.margin-tb-5 {
+    margin: 5px 0 !important;
+}
+
+.mdui-dialog {
+    z-index: 9500 !important;
+}
+
+.mdui-overlay.mdui-overlay-show {
+    z-index: 9100 !important;
+}
+
+.mdui-snackbar {
+    z-index: 9100 !important;
+}
+
+#customLoading .customContent {
+    padding-top: 10px;
+}

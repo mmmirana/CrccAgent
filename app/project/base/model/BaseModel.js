@@ -59,6 +59,17 @@ class BaseModel {
     };
 
     /**
+     * 查询单条数据
+     * @param where
+     * @param columns
+     * @param orders
+     * @return {Promise<*>}
+     */
+    async selectOne(where, columns, orders) {
+        return await MysqlUtils.selectOne(this.tablename, where, columns, orders);
+    }
+
+    /**
      * 根据主键ID查询唯一
      * @param pk
      * @returns {Promise<*>}

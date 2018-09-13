@@ -15,7 +15,7 @@ MysqlUtils.db = db;
 
 MysqlUtils.query = async function (sql, params) {
     return await this.db.query(sql, params);
-}
+};
 
 /**
  * 新增
@@ -70,6 +70,34 @@ MysqlUtils.select = async function (tablename, where, columns, orders) {
 };
 
 /**
+ * 查询
+ * @param tablename
+ * @param where
+ * @param columns
+ * @param orders
+ * @returns {Promise<*>}
+ */
+MysqlUtils.selectOne = async function (tablename, where, columns, orders) {
+    let options = {
+        where,
+        columns,
+        orders,
+    };
+
+    let dbresult = await this.db.select(tablename, options);
+
+    if (dbresult) {
+        if (dbresult.length === 1) {
+            return dbresult[0]
+        } else {
+            throw new Error(`[ selectOne ] 查询数据不唯一, tablename: ${tablename}, where: ${where}`);
+        }
+    } else {
+        return null;
+    }
+};
+
+/**
  * 根据主键ID查询唯一
  * @param tablename
  * @param pk
@@ -78,11 +106,8 @@ MysqlUtils.select = async function (tablename, where, columns, orders) {
 MysqlUtils.selectByPk = async function (tablename, pk) {
     let where = {};
     where[appcfg.mysql_cfg.pk_name] = pk;
-    return await this.db.select(tablename, {
-        where: where,
-    });
-}
-;
+    return await this.selectOne(tablename, where);
+};
 
 
 /**
@@ -94,7 +119,6 @@ MysqlUtils.selectByPk = async function (tablename, pk) {
 
 MysqlUtils.count = async function (tablename, where) {
     return await this.db.count(tablename, where);
-}
-;
+};
 
 module.exports = MysqlUtils;
