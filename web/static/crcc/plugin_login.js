@@ -7,6 +7,10 @@ $().ready(function () {
         containment: true,
         handle: '.handle',
     });
+
+    // 如果storage中有授权邮箱，就获取到到邮箱
+    let cp_email = window.storageutils.get('cp_emall');
+    if (cp_email) $("#cp_email").val(cp_email);
 });
 
 /**
@@ -15,10 +19,13 @@ $().ready(function () {
 function loginOnekey() {
 
     // 初始化配置
-    let config = initCfg($("#email").val());
+    let basicconfig = initCfg($("#cp_email").val());
 
-    if (config) {
-        plugin_login(config);
+    if (basicconfig) {
+        plugin_login(basicconfig);
+    } else {
+        mdui.alert("抱歉，获取配置信息失败，请确认您的邮箱已授权");
+        return;
     }
 
 }

@@ -158,7 +158,7 @@ function tips(showInfo, msg) {
     console.log(showInfo, msg);
     setTimeout(function () {
         if (showInfo) {
-            if (cp_msgStack.length >= cfg.cp_tipsLength) {
+            if (cp_msgStack.length >= (cfg.cp_tipsLength || 5)) {
                 cp_msgStack.shift();
             }
             cp_msgStack.push(msg);

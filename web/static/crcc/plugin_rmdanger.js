@@ -2,6 +2,10 @@
  * 一键消除隐患
  */
 function deldangerOnekey() {
+    if (!basicconfig) {
+        mdui.alert("抱歉，获取配置信息失败，请确认您的邮箱已授权");
+        return;
+    }
 
     let dangerlistInst = cpLoading("获取隐患列表", '正在获取隐患列表，请稍等...');
     //同步隐患列表

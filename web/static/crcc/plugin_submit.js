@@ -6,9 +6,11 @@ let submitGroupNumber = 0;// 今日已提交的数据
 let cp_appid = window.storageutils.get("cp_appid");
 let cp_guserid = window.storageutils.get("cp_guserid");
 
+let basicconfig = {};
+
 $().ready(function () {
 
-    initCfg(window.storageutils.get("cp_email"));
+    basicconfig = initCfg(window.storageutils.get("cp_email"));
 
     $('#plugin_pop').draggabilly({
         // 选项（配置）...
@@ -26,6 +28,10 @@ $().ready(function () {
  * 一键初始化crcc数据
  */
 function initCrccDataOnekey() {
+    if (!basicconfig) {
+        mdui.alert("抱歉，获取配置信息失败，请确认您的邮箱已授权");
+        return;
+    }
 
     // 获取初始化的数目
     let initCrccDataResult = cp_post_sync(cfg.crccBaseUrl + "/crcc/getInitCrccData", {appid: cp_appid});
@@ -60,6 +66,11 @@ function initCrccDataOnekey() {
  * 调用初始化的方法
  */
 function initCrccData() {
+    if (!basicconfig) {
+        mdui.alert("抱歉，获取配置信息失败，请确认您的邮箱已授权");
+        return;
+    }
+
     // 1、生成施工单位数据
     initCrccUnit().then(function (syncResult, size) {
         if (syncResult && syncResult.code === 1) {
@@ -320,6 +331,11 @@ function initBasicPostdata() {
  * 一键提交数据
  */
 function submitDataOneKey() {
+
+    if (!basicconfig) {
+        mdui.alert("抱歉，获取配置信息失败，请确认您的邮箱已授权");
+        return;
+    }
 
     // 更新一下数据
     getTodayData();
