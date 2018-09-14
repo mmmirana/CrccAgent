@@ -155,13 +155,13 @@ function syncCrccUnit() {
             /**
              * 获取单位成功后，开始同步
              */
-            cp_post(getUnitUrl, getUnitData, "text").done(function (unitJson) {
+            $.when(cp_post(getUnitUrl, getUnitData, "text")).done(function (unitJson) {
                 let size = JSON.parse(unitJson).length;
                 tips(true, "[ I ]获取施工单位数据成功，准备同步");
-                cp_post(cfg.crccBaseUrl + "/crcc/syncUnit", {
+                $.when(cp_post(cfg.crccBaseUrl + "/crcc/syncUnit", {
                     appid: cp_appid,
                     unitJson: unitJson
-                }).done(function (syncResult) {
+                })).done(function (syncResult) {
                     resolve(syncResult, size);
                 });
             });
