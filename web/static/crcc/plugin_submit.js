@@ -60,15 +60,48 @@ function syncCrccDataOnekey() {
  * 一键初始化数据，生成基础提交数据
  */
 function initCrccDataOnekey() {
-    /** 过程比较慢，需要loading提示 **/
-    let loadingInst = cpLoading("初始化数据", "正在初始化基础数据，请耐心等待...");
-    setTimeout(function () {
-        // 生成的数据
-        initBasicPostdata();
 
-        // 执行完成后关闭loading
-        loadingInst.close();
-    })
+    // 已生成的提交数据数量
+    let initCrccData = cp_post_sync(cfg.crccBaseUrl + "/crcc/getInitCrccData", {appid: cp_appid});
+    let {postdatamNum = 0} = initCrccData.data || {};
+
+    if (postdatamNum > 0) {
+        // 初始化数据
+        let inst = mdui.confirm(`已有${postdatamNum}组基础提交数据，重新初始化？`, function () {
+            // 关闭弹窗
+            inst.close();
+
+            let clearData = cp_post_sync(cfg.crccBaseUrl + "/crcc/clearBasicPostdata", {appid: cp_appid});
+            tips(false, `删除数据结果：${JSON.stringify(clearData)}`);
+
+            /** 过程比较慢，需要loading提示 **/
+            let loadingInst = cpLoading("初始化数据", "正在初始化基础提交数据，请耐心等待...");
+            setTimeout(function () {
+                // 生成的数据
+                initBasicPostdata();
+
+                // 执行完成后关闭loading
+                loadingInst.close();
+            }, 500);
+
+        }, function () {
+            // 关闭弹窗
+            inst.close();
+            // 提示取消提交数据
+            tips(true, '[ I ]您取消了初始化数据');
+        }, mduiOpt);
+
+    } else {
+        /** 过程比较慢，需要loading提示 **/
+        let loadingInst = cpLoading("初始化数据", "正在初始化基础提交数据，请耐心等待...");
+        setTimeout(function () {
+            // 生成的数据
+            initBasicPostdata();
+
+            // 执行完成后关闭loading
+            loadingInst.close();
+        }, 500);
+    }
 }
 
 /**

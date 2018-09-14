@@ -121,4 +121,28 @@ MysqlUtils.count = async function (tablename, where) {
     return await this.db.count(tablename, where);
 };
 
+/**
+ * 统计个数
+ * @param tablename
+ * @param where
+ * @returns {Promise<*>} 直接返回个数
+ */
+
+MysqlUtils.delete = async function (tablename, where) {
+    return await this.db.delete(tablename, where);
+};
+
+/**
+ * 统计个数
+ * @param tablename
+ * @param pk 主键id
+ * @returns {Promise<*>} 直接返回个数
+ */
+
+MysqlUtils.deleteByPk = async function (tablename, pk) {
+    let where = {};
+    where[appcfg.mysql_cfg.pk_name] = pk;
+    return await this.db.delete(tablename, where);
+};
+
 module.exports = MysqlUtils;

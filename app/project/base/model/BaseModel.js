@@ -87,6 +87,24 @@ class BaseModel {
     async count(where) {
         return await MysqlUtils.count(this.tablename, where);
     };
+
+    /**
+     * 根据where删除数据
+     * @param where
+     * @return {Promise<*>}
+     */
+    async delete(where) {
+        return await MysqlUtils.delete(this.tablename, where);
+    }
+
+    /**
+     * 根据where删除数据
+     * @param where
+     * @return {Promise<*>}
+     */
+    async deleteByPk(pk) {
+        return await MysqlUtils.deleteByPk(this.tablename, pk);
+    }
 }
 
 module.exports = BaseModel;

@@ -387,14 +387,33 @@ router.post('/getInitCrccData', async function (ctx) {
         let unitNum = await basic_unitModel.count(where);
         let nodeNum = await basic_nodeModel.count(where);
         let problemNum = await basic_problemModel.count(where);
+        let postdatamNum = await basic_postdataModel.count(where);
 
         let initData = {
             unitNum,// 单位数量
             nodeNum,// 隐患节点数量
             problemNum,// 隐患问题数量
+            postdatamNum,// 提交数据数量
         };
 
         ctx.body = ResultUtils.success(initData, "获取初始化数据条目成功");
+    } catch (e) {
+        ctx.body = ResultUtils.errorMsg("获取初始化数据条目异常，" + e.toString());
+    }
+});
+
+/**
+ * 获取初始化的数据条目数
+ */
+router.post('/clearBasicPostdata', async function (ctx) {
+    try {
+        let appid = ctx.parameters.appid;
+        let where = {
+            appid: appid
+        };
+        let dbresult = await basic_postdataModel.delete(where);
+
+        ctx.body = ResultUtils.success(dbresult.affectedRows, "删除成功");
     } catch (e) {
         ctx.body = ResultUtils.errorMsg("获取初始化数据条目异常，" + e.toString());
     }
