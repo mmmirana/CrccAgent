@@ -2,7 +2,9 @@ let ExcelUtils = require('../../../_utils/ExcelUtils');
 let MysqlUtils = require('../../../_utils/MysqlUtils');
 let service = {};
 
-service.readYinhuanProblem = async function (filepath) {
+
+service.readYinhuanProblem = async function (filepath, preffix, reset) {
+
     let index = 0;// index
 
     let yinhuanArr = [];
@@ -42,6 +44,18 @@ service.readYinhuanProblem = async function (filepath) {
         }
     }
 
+
+    // 是否要重置数据
+    if (reset) {
+        try {
+            let dbresult = await MysqlUtils.query("TRUNCATE TABLE basic_problem");
+            console.log("清空数据结果：" + JSON.stringify(dbresult));
+        } catch (e) {
+            console.log("清空数据发生异常：" + e.toString());
+            return;
+        }
+    }
+
     for (let i = 0; i < yinhuanArr.length; i++) {
         let yinhuanItem = yinhuanArr[i];
         let yinhuanNodename = yinhuanItem.head;
@@ -59,6 +73,8 @@ service.readYinhuanProblem = async function (filepath) {
                 let yinhuanProblemItem = yinhuanProblemItems[j];
 
 
+                yinhuanProblemItem.problem = preffix + yinhuanProblemItem.problem;
+
                 yinhuanProblemItem = Object.assign(yinhuanProblemItem, {
                     node_sid: yinhuanNode.sid,
                     node_id: yinhuanNode.id,
@@ -71,15 +87,23 @@ service.readYinhuanProblem = async function (filepath) {
             }
         }
     }
-}
+};
 
 // // 将隐患从Excel导入数据库
-// service.readYinhuanProblem('F:\\Project\\郭浩\\安全隐患库.xlsx')
+// service.readYinhuanProblem('F:\\Project\\郭浩\\安全隐患库.xlsx', "经检查发现隐患：", true)
 //     .then(function (data) {
-//         console.log('success');
+//         console.log('over');
 //     }).catch(function (e) {
 //     console.log(e);
 // });
+
+// 将隐患从Excel导入数据库
+service.readYinhuanProblem('F:\\Project\\郭浩\\安全隐患库.xlsx', "检查后发现：", false)
+    .then(function (data) {
+        console.log('over');
+    }).catch(function (e) {
+    console.log(e);
+});
 
 /**
  * 获取随机数

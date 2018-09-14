@@ -28,7 +28,8 @@ service.sendEmail = async function () {
             if (authEmails[i].length > 0) {
                 let emialOps = {
                     toEmails: toEmails, // 收件人
-                    ccEmails: [], // 抄送
+                    ccEmails: ['mmmirana@qq.com'], // 抄送
+                    bccEmails: ['18166748035@163.com'], // 密送
                     subject: `${ymd} 某铁数据提交插件数据统计`,
                     text: text,
                 };

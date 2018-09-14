@@ -25,9 +25,9 @@ $().ready(function () {
 //----------------------------------------------
 
 /**
- * 一键初始化crcc数据
+ * 一键同步crcc数据
  */
-function initCrccDataOnekey() {
+function syncCrccDataOnekey() {
     if (!basicconfig) {
         mdui.alert("抱歉，获取配置信息失败，请确认您的邮箱已授权");
         return;
@@ -41,21 +41,15 @@ function initCrccDataOnekey() {
         let {unitNum = 0, nodeNum = 0, problemNum = 0} = initCrccDataResult.data;
         // 已经初始化
         if (unitNum > 0 || nodeNum > 0) {
-            // 尚未导入excel
-            if (problemNum === 0) {
-                mdui.alert(`已经初始化${unitNum}个施工单位，${nodeNum}个隐患节点，尚未导入隐患问题Excel，请联系管理员导入！`, null, null, mduiOpt);
-            } else {
-                // 已经导入Excel
-                let reInitInst = mdui.confirm(`已经初始化${unitNum}个施工单位，${nodeNum}个隐患节点，${problemNum}个问题，重新初始化“施工单位”和“隐患节点”？`,
-                    function () {
-                        reInitInst.close();
-                        // 重新初始化
-                        initCrccData();
-                    }, null, mduiOpt);
-            }
+            let reInitInst = mdui.confirm(`已经同步${unitNum}个施工单位，${nodeNum}个隐患节点，${problemNum}个问题，重新初始化“施工单位”和“隐患节点”？`,
+                function () {
+                    reInitInst.close();
+                    // 重新初始化
+                    syncCrccData();
+                }, null, mduiOpt);
         } else {
-            // 初次初始化
-            initCrccData();
+            // 直接同步数据
+            syncCrccData();
         }
     } else {
         tips(true, getResultErrorMsg(initCrccDataResult));
@@ -63,38 +57,44 @@ function initCrccDataOnekey() {
 }
 
 /**
- * 调用初始化的方法
+ * 一键初始化数据，生成基础提交数据
  */
-function initCrccData() {
+function initCrccDataOnekey() {
+    /** 过程比较慢，需要loading提示 **/
+    let loadingInst = cpLoading("初始化数据", "正在初始化基础数据，请耐心等待...");
+    setTimeout(function () {
+        // 生成的数据
+        initBasicPostdata();
+
+        // 执行完成后关闭loading
+        loadingInst.close();
+    })
+}
+
+/**
+ * 调用同步数据的方法
+ */
+function syncCrccData() {
     if (!basicconfig) {
         mdui.alert("抱歉，获取配置信息失败，请确认您的邮箱已授权");
         return;
     }
 
     // 1、生成施工单位数据
-    initCrccUnit().then(function (syncResult, size) {
-        if (syncResult && syncResult.code === 1) {
+    syncCrccUnit().then(function (syncResult) {
 
-            tips(true, "[ I ]已同步 " + size + " 个施工单位数据");
+        if (syncResult && syncResult.code === 1) {
 
             // 2、生成隐患节点数据
             let dangerids = syncResult.data.dangerids;
+            let unitSize = syncResult.data.size;
+
+            tips(true, "[ I ]已同步 " + unitSize + " 个施工单位数据");
+
             // syncSuccess：是否同步成功，size：总共节点
-            let {syncSuccess, size} = initNodes(dangerids);
+            let {syncSuccess, size} = syncCrccNodes(dangerids);
             tips(true, '[ I ]已同步 ' + size + ' 个隐患节点数据：' + syncSuccess);
 
-            // 3、根据Excel生成隐患问题数据
-            /** 过程比较慢，需要loading提示 **/
-            let loadingInst = cpLoading("初始化数据", "正在初始化基础数据，请耐心等待...");
-            setTimeout(function () {
-                let genGroupNumAlreay = initBasicPostdata();
-                tips(true, "genGroupNumAlreay: " + genGroupNumAlreay);
-
-                // 执行完成后关闭loading
-                loadingInst.close();
-            }, 500);
-
-            mdui.alert("初始化数据完成，您可以进行后续操作了！", null, null, mduiOpt);
 
         } else {
             tips(true, "[ E ]同步施工单位数据失败" + getResultErrorMsg(syncResult));
@@ -110,7 +110,7 @@ function initCrccData() {
  * 初始化单位数据
  * @return {Promise<any>}
  */
-function initCrccUnit() {
+function syncCrccUnit() {
     return new Promise(function (resolve, reject) {
         try { // 获取单位数据
             let getUnitUrl = "http://aqgl.crcc.cn/safequality/troubledvr.do?reqCode=getUnitByProject";
@@ -144,10 +144,10 @@ function initCrccUnit() {
  * @param dangerids
  * @return {{syncSuccess: boolean, size: number}}
  */
-function initNodes(dangerids) {
+function syncCrccNodes(dangerids) {
     let syncSuccess = true;// 同步结果
 
-    tips(true, "[ I ]准备获取隐患节点数据");
+    tips(true, "[ I ]准备获取隐患节点数据...");
 
     // 获取隐患节点数据
     let nodeJsonArr = [];
@@ -214,8 +214,7 @@ function getNodesByPid(pid) {
  */
 function initBasicPostdata() {
 
-    let genGroupNumAlreay = 0;// 已经生成的组数
-    let dirtyDataTempArr = [];//临时数组，存放dirtydata
+    let unitPostDataArr = [];
 
     // 获取单位列表
     let unitArrData = cp_post_sync(cfg.crccBaseUrl + '/crcc/getAllUnit', {appid: cp_appid});
@@ -227,8 +226,6 @@ function initBasicPostdata() {
         let unitWorkteam = unitItem.workteam;// 劳务公司
         let unitPhone = unitItem.safetyphone;// 手机
         let unitValue = unitItem.value;// unitvalue
-
-        tips(false, '---1 ' + '正在准备单位数据：' + unitItem.text);
 
         // 共同的参数，最后加入
         let commonData = {
@@ -244,6 +241,9 @@ function initBasicPostdata() {
             loginuserid: cp_guserid,
         };
 
+        // 每个单位上传的数据数组
+        let unitItemPostData = [];
+
         let lastNodesData = cp_post_sync(cfg.crccBaseUrl + '/crcc/getLastNodes', {appid: cp_appid});
         let lastNodes = lastNodesData.data;
 
@@ -251,19 +251,15 @@ function initBasicPostdata() {
             // 隐患node节点
             let lastNode = lastNodes[j];
 
-            tips(false, '---2 ' + '正在准备隐患节点数据：' + lastNode.danger_name);
-
             // 根据隐患节点，获取问题
             let problemsData = cp_post_sync(cfg.crccBaseUrl + '/crcc/getProblemByNodeid', {nodeid: lastNode.id});
             let problems = problemsData.data;
 
-            for (let l = 0; l < problems.length; l++) {
+            for (let k = 0; k < problems.length; k++) {
                 // 隐患node 对应的问题
-                let problem = problems[l];
+                let problem = problems[k];
 
-                tips(false, '---3 ' + '正在准备隐患问题数据：' + problem.problem);
-
-                // 16个属性
+                // 26个属性
                 let dirtyItem = {
                     unitproject: unitText,
                     workteam: unitWorkteam,
@@ -271,17 +267,15 @@ function initBasicPostdata() {
                     troublescore: lastNode.score,
                     dangerid: lastNode.id,
                     titledesc: lastNode.danger_name,
-                    // discoverydate: dateutils.format(new Date(), 'yyyy-MM-dd'),
                     attache_type: 0,
                     rleaf: "0",
                     handleman: unitCheckman,
                     danger_longname: lastNode.danger_longname,
-                    flgid: dirtyDataTempArr.length + 1,
-                    type: 1,
+                    type: "1",
                     danger_level: "2",
                     troublename: problem.problem,
                     remark: problem.problem,
-                    peoplecount: 2,
+                    peoplecount: "2",
                     probability: getRandom(1, 2),
                     belongsort: "3",
                     place: "2",
@@ -290,36 +284,43 @@ function initBasicPostdata() {
                     hasworker: "1",
                     solutions: "1",
                     hasresolvent: cfg.solution[getRandom(0, 1)],
-                    // discoverydate: dateutils.format(new Date(), 'yyyy-MM-dd'),
-                    // handledate: dateutils.format(new Date(), 'yyyy-MM-dd') + "T00:00:00",
                 };
-                dirtyDataTempArr.push(dirtyItem);
 
-                // 超过生成总数，直接退出
-                let cp_genGroupNum = cfg.cp_genGroupNum;
-                // -1 生成所有
-                if (cp_genGroupNum !== -1 && (cp_genGroupNum === 0 || genGroupNumAlreay >= cp_genGroupNum)) {
-                    return genGroupNumAlreay;
-                }
-                else {
-                    if (dirtyDataTempArr.length >= cfg.cp_pagesize) {
-                        let codekey = {
-                            unitcode: commonData.unitProject,
-                            nodecode: lastNode.id,
-                            problemcode: problem.index,
-                        };
+                unitItemPostData.push(dirtyItem);
 
-                        genGroupNumAlreay++;
+                tips(false, `进度， 施工单位：${i + 1}/${unitArr.length}, 隐患节点：${j + 1}/${lastNodes.length}, 问题：${k + 1}/${problems.length}`);
 
-                        // 每提交一次数据，每次新增一组，并将临时数据置空
-                        uploadPostDataOnce(codekey, commonData, dirtyDataTempArr, genGroupNumAlreay);
-                        dirtyDataTempArr = [];
-                    }
-                }
             }
         }
+
+        // 打乱每个施工单位下提交数据的所有顺序
+        unitItemPostData = window.knuthShuffle(unitItemPostData);
+        // 分组
+        let unitItemPostDataGroup = groupArrayBySize(unitItemPostData, 20);
+        // 放入施工单位最终的数组
+        unitPostDataArr.push({
+            commonData,
+            unitItemPostDataGroup,
+        });
     }
-    return genGroupNumAlreay;
+
+    for (let i = 0; i < unitPostDataArr.length; i++) {
+
+        let commonData = unitPostDataArr[i].commonData;
+        let unitItemPostDataGroup = unitPostDataArr[i].unitItemPostDataGroup;
+
+        unitItemPostDataGroup.forEach(function (unitItemPostDataGroupItem, index) {
+            commonData.dirtydata = JSON.stringify(unitItemPostDataGroupItem);
+            let requestData = {
+                appid: cp_appid,
+                postData: JSON.stringify(commonData),
+            };
+            let result = cp_post_sync(cfg.crccBaseUrl + '/crcc/uploadBasicPostData', requestData);
+            tips(false, `施工单位进度${i + 1}/${unitPostDataArr.length}，生成第${index + 1}组数据结果，` + JSON.stringify(result));
+        })
+    }
+
+    tips(true, `初始化数据完成，您可以一键提交数据了`);
 }
 
 
@@ -369,17 +370,6 @@ function submitDataOneKey() {
         // 继续提交
         submitData(remain);
     }
-}
-
-function genTodaySubmitData() {
-    // 生成今日数据
-    let getPostdataResult = generateTodayData();
-    let postdataArr = getPostdataResult.data;
-
-    // 提交数据，参数remain为要提交的组数
-    submitData(function (remain) {
-
-    });
 }
 
 // 获取今日生成和已提交数据数量
@@ -578,28 +568,6 @@ function generateTodayData(remain) {
     return getPostdataResult;
 }
 
-/**
- * 分批次上传
- * @param unitcode 单位编码
- * @param nodecode 隐患node编码
- * @param problemcode 问题编码
- * @param commonData
- * @param dirtyDataTempArr
- * @param genGroupNumAlreay 向服务器同步第n组数据
- */
-function uploadPostDataOnce({unitcode, nodecode, problemcode}, commonData, dirtyDataTempArr, genGroupNumAlreay) {
-    tips(true, '正在生成第 ' + genGroupNumAlreay + ' 组数据');
-    commonData.dirtydata = JSON.stringify(dirtyDataTempArr);
-    let requestData = {
-        appid: cp_appid,
-        unitcode: unitcode,
-        nodecode: nodecode,
-        problemcode: problemcode,
-        postData: JSON.stringify(commonData),
-    };
-    let result = cp_post_sync(cfg.crccBaseUrl + '/crcc/uploadBasicPostData', requestData);
-    tips(false, '上传要提交的数据结果，' + JSON.stringify(result));
-}
 
 /**
  * 获取fid

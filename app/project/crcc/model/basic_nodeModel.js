@@ -6,7 +6,7 @@ class model extends BaseModel {
      * @param appid
      * @param yinHuanArr
      */
-    async insertYinhuanNodes(appid, yinHuanArr) {
+    async syncNodes(appid, yinHuanArr) {
         for (let i = 0; i < yinHuanArr.length; i++) {
             let yinHuan = yinHuanArr[i];
             let yinHuanModel = {

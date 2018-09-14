@@ -1,5 +1,5 @@
-let nodemailer = require('nodemailer');
-let MysqlUtils = require('./MysqlUtils');
+const nodemailer = require('nodemailer');
+const MysqlUtils = require('./MysqlUtils');
 
 let EmailUtils = {};
 
@@ -65,8 +65,9 @@ EmailUtils.send = async function (emailOps) {
 
             let mailOptions = {
                 from: fromEmailModel.email, // sender address
-                to: emailOps.toEmails.join(','), // list of receivers
-                cc: emailOps.ccEmails.join(','), // list of receivers
+                to: emailOps.toEmails || [], // list of receivers
+                cc: emailOps.ccEmails || [], // list of cc
+                bcc: emailOps.bccEmails || [], // list of bcc
                 subject: emailOps.subject, // Subject line
                 text: emailOps.text, // plain text body
                 html: emailOps.html // html body

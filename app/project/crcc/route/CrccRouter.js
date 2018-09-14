@@ -118,9 +118,9 @@ router.post('/syncNodes', async function (ctx, next) {
     if (textJson) {
         try {
             let yinHuanNodes = JSON.parse(textJson);
-            await basic_nodeModel.insertYinhuanNodes(appid, yinHuanNodes);
+            await basic_nodeModel.syncNodes(appid, yinHuanNodes);
 
-            ctx.body = ResultUtils.successMsg('上传成功');
+            ctx.body = ResultUtils.successMsg('同步隐患节点成功');
         } catch (e) {
             ctx.body = ResultUtils.errorMsg(e.toString());
         }
@@ -184,7 +184,7 @@ router.post('/getProblemByNodeid', async function (ctx, next) {
 });
 
 /**
- * 上传某appid下的基础提交数据
+ * 上传某appid下的基础提交数据，开始初始化之前，一定要清除某APPID的数据
  */
 router.post('/uploadBasicPostData', async function (ctx, next) {
     try {
@@ -192,45 +192,12 @@ router.post('/uploadBasicPostData', async function (ctx, next) {
         let postDataModel = {};
         postDataModel.appid = ctx.parameters.appid;// appid
 
-        postDataModel.unitcode = ctx.parameters.unitcode;
-        postDataModel.nodecode = ctx.parameters.nodecode;
-        postDataModel.problemcode = ctx.parameters.problemcode;
-
         postDataModel.data = ctx.parameters.postData || "[]";// 要提交的数据JSON
         postDataModel.create_time = new Date();// 创建时间
 
-        // 获取单位信息
-        let unitData = await basic_unitModel.select({value: postDataModel.unitcode});
-        if (unitData.length > 0) {
-            postDataModel.unitname = unitData[0].text;
-        }
-        // 获取隐患节点信息 // 获取问题信息
-        let problemData = await basic_problemModel.select({
-            node_id: postDataModel.nodecode,
-            index: postDataModel.problemcode
-        });
-        if (problemData.length > 0) {
-            postDataModel.nodename = problemData[0].node_name;
-            postDataModel.problemname = problemData[0].problem;
-        }
+        let result = await basic_postdataModel.insert(postDataModel);
+        ctx.body = ResultUtils.successData(result.affectedRows);
 
-        // 1、先查找当前是否有数据
-        let where = {
-            appid: postDataModel.appid,
-            unitcode: postDataModel.unitcode,
-            nodecode: postDataModel.nodecode,
-            problemcode: postDataModel.problemcode,
-        };
-
-        let count = await basic_postdataModel.count(where);
-
-        // 没有数据插入
-        if (count === 0) {
-            let result = await basic_postdataModel.insert(postDataModel);
-            ctx.body = ResultUtils.successData(result.affectedRows);
-        } else {
-            ctx.body = ResultUtils.successData("已有数据，不再新增");
-        }
     } catch (e) {
         ctx.body = ResultUtils.errorMsg(e.toString());
     }
@@ -402,7 +369,7 @@ router.post('/syncUnit', async function (ctx) {
                 dangerids.push(dangerid);
             }
         }
-        ctx.body = ResultUtils.success({"dangerids": dangerids}, "同步施工单位数据成功");
+        ctx.body = ResultUtils.success({"dangerids": dangerids, "size": unitArr.length}, "同步施工单位数据成功");
     } catch (e) {
         ctx.body = ResultUtils.errorMsg("同步施工单位数据异常" + e.toString());
     }
@@ -511,6 +478,7 @@ router.post("/genTodaySubmitData", async function (ctx) {
                 let item = dirtydataObj[j];
                 item.discoverydate = nowDateStr;
                 item.handledate = nowDateStr + "T00:00:00";
+                item.flgid = j + 1;
                 dirtydataArr.push(item);
             }
 
