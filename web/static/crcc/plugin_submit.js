@@ -12,6 +12,15 @@ $().ready(function () {
 
     basicconfig = initCfg(window.storageutils.get("cp_email"));
 
+    // 是否显示同步数据的按钮
+    let showinit = window.storageutils.get('cp_showinit');
+    if (showinit === 1) {
+        $("#initDiv").show();
+    } else {
+        $("#initDiv").hide();
+    }
+
+
     $('#plugin_pop').draggabilly({
         // 选项（配置）...
         containment: true,

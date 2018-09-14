@@ -41,12 +41,14 @@ router.post('/getconfig', async function (ctx, next) {
             let authData = await basic_authModel.select(where);
             if (authData && authData.length > 0) {
                 let auth = authData[0];
+                let showinit = auth.showinit || 0;// 是否显示初始化按钮
                 if (auth.enable === 0) {
                     result = ResultUtils.errorMsg('该邮箱尚未授权');
                 } else {
                     let configData = await basic_configModel.select({appid: auth.appid, enable: 1});
                     if (configData && configData.length > 0) {
                         let config = configData[0];
+                        config.showinit = showinit;
                         result = ResultUtils.successData(config);
                     } else {
                         result = ResultUtils.errorMsg('该邮箱的应用尚未配置或尚未启用');

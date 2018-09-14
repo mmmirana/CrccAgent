@@ -213,6 +213,7 @@ function initCfg(email) {
         window.storageutils.set("cp_appid", config.appid);
         window.storageutils.set("cp_email", email);
         window.storageutils.set("cp_gusername", config.username);
+        window.storageutils.set("cp_showinit", config.showinit || 0);// 是否显示初始化数据的按钮
 
         window.cfg = {
             crccBaseUrl: config.crccBaseUrl,
