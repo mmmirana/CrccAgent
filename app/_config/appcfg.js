@@ -50,6 +50,15 @@ let cfg = {
         }
     },
 
+    tencent: {
+        // 百度AI应用的参数
+        AI_APPLICATION: {
+            APP_ID: "2108504173",
+            API_KEY: "YFo1ojZYVY6585eA",
+            SECRET_KEY: "tLs4kFEBOEvDqCAlkkbl4fxQPhEpcOTK",
+        }
+    },
+
     mysql: {
         host: '127.0.0.1',
         port: 3306,

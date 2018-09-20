@@ -72,7 +72,6 @@ service.readYinhuanProblem = async function (filepath, preffix, reset) {
             for (let j = 0; j < yinhuanProblemItems.length; j++) {
                 let yinhuanProblemItem = yinhuanProblemItems[j];
 
-
                 yinhuanProblemItem.problem = preffix + yinhuanProblemItem.problem;
 
                 yinhuanProblemItem = Object.assign(yinhuanProblemItem, {
@@ -89,8 +88,20 @@ service.readYinhuanProblem = async function (filepath, preffix, reset) {
     }
 };
 
+// 2018-09-20
+// 经检查发现隐患：
+// 检查后发现：
+
 // // 将隐患从Excel导入数据库
-// service.readYinhuanProblem('F:\\Project\\郭浩\\安全隐患库.xlsx', "经检查发现隐患：", true)
+// service.readYinhuanProblem('F:\\Project\\郭浩\\安全隐患库.xlsx', "检查发现隐患，", true)
+//     .then(function (data) {
+//         console.log('over');
+//     }).catch(function (e) {
+//     console.log(e);
+// });
+//
+// // 将隐患从Excel导入数据库
+// service.readYinhuanProblem('F:\\Project\\郭浩\\安全隐患库.xlsx', "检查后发现，", false)
 //     .then(function (data) {
 //         console.log('over');
 //     }).catch(function (e) {
@@ -98,7 +109,7 @@ service.readYinhuanProblem = async function (filepath, preffix, reset) {
 // });
 
 // 将隐患从Excel导入数据库
-service.readYinhuanProblem('F:\\Project\\郭浩\\安全隐患库.xlsx', "检查后发现：", false)
+service.readYinhuanProblem('F:\\Project\\郭浩\\安全隐患库.xlsx', "核查时发现该隐患，", false)
     .then(function (data) {
         console.log('over');
     }).catch(function (e) {

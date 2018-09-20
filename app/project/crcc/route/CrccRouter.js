@@ -177,8 +177,9 @@ WHERE
  */
 router.post('/getProblemByNodeid', async function (ctx, next) {
     try {
+        let appid = ctx.parameters.appid;
         let nodeid = ctx.parameters.nodeid;
-        let data = await basic_problemModel.select({"node_id": nodeid});
+        let data = await basic_problemModel.select({"appid": appid, "node_id": nodeid});
         ctx.body = ResultUtils.successData(data);
     } catch (e) {
         ctx.body = ResultUtils.errorMsg(e.toString());

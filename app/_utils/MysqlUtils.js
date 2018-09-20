@@ -1,5 +1,6 @@
 const rds = require('ali-rds');
 const appcfg = require('../_config/appcfg');
+const pkFieldname = appcfg.mysql_cfg.pk_name;// 主键字段名，一般为id，这里定义为sid
 
 const db = rds({
     host: appcfg.mysql.host,
@@ -8,6 +9,7 @@ const db = rds({
     password: appcfg.mysql.password,
     database: appcfg.mysql.database,
 });
+
 
 let MysqlUtils = {};
 
@@ -35,7 +37,7 @@ MysqlUtils.insert = async function (tablename, row) {
  */
 MysqlUtils.updateByPk = async function (tablename, row, pkVal) {
     let where = {};
-    where[appcfg.mysql_cfg.pk_name] = pkVal;
+    where[pkFieldname] = pkVal;
     return await this.update(tablename, row, where);
 }
 
@@ -105,7 +107,7 @@ MysqlUtils.selectOne = async function (tablename, where, columns, orders) {
  */
 MysqlUtils.selectByPk = async function (tablename, pk) {
     let where = {};
-    where[appcfg.mysql_cfg.pk_name] = pk;
+    where[pkFieldname] = pk;
     return await this.selectOne(tablename, where);
 };
 
@@ -141,7 +143,7 @@ MysqlUtils.delete = async function (tablename, where) {
 
 MysqlUtils.deleteByPk = async function (tablename, pk) {
     let where = {};
-    where[appcfg.mysql_cfg.pk_name] = pk;
+    where[pkFieldname] = pk;
     return await this.db.delete(tablename, where);
 };
 

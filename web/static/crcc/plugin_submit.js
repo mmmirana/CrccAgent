@@ -294,7 +294,10 @@ function initBasicPostdata() {
             let lastNode = lastNodes[j];
 
             // 根据隐患节点，获取问题
-            let problemsData = cp_post_sync(cfg.crccBaseUrl + '/crcc/getProblemByNodeid', {nodeid: lastNode.id});
+            let problemsData = cp_post_sync(cfg.crccBaseUrl + '/crcc/getProblemByNodeid', {
+                appid: cp_appid,
+                nodeid: lastNode.id
+            });
             let problems = problemsData.data;
 
             for (let k = 0; k < problems.length; k++) {

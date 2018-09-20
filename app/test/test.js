@@ -30,6 +30,3 @@ async function testEmail() {
 // dirtydata.forEach(function (v, i) {
 //     console.log(dirtydata);
 // });
-
-let dirtydataItem="{\"unitproject\":\"融创项目北区1期12#、13#地块4#楼东段\",\"workteam\":\"山西中铁建筑劳务有限公司\",\"wtcheckman\":\"汤国平\",\"troublescore\":0,\"dangerid\":\"000005000002000015000012\",\"titledesc\":\"电气安全\",\"attache_type\":0,\"rleaf\":\"0\",\"handleman\":\"汤国平\",\"danger_longname\":\"房建/现场隐患/塔式起重机/电气安全\",\"type\":\"1\",\"danger_level\":\"2\",\"troublename\":\"检查后发现：未采用TN-S接零保护系统供电\",\"remark\":\"检查后发现：未采用TN-S接零保护系统供电\",\"peoplecount\":\"2\",\"probability\":\"1\",\"belongsort\":\"3\",\"place\":\"2\",\"fntech\":\"1\",\"inoutroad\":\"2\",\"hasworker\":\"1\",\"solutions\":\"1\",\"hasresolvent\":\"及时将发现的隐患问题进行整改，以减少安全事故的发生。\",\"discoverydate\":\"2018-09-14\",\"handledate\":\"2018-09-14T00:00:00\",\"flgid\":1}"
-console.log(JSON.parse(dirtydataItem))
