@@ -321,7 +321,7 @@ function initBasicPostdata() {
                     troublename: problem.problem,
                     remark: problem.problem,
                     peoplecount: "2",
-                    probability: getRandom(1, 2),
+                    probability: "1",
                     belongsort: "3",
                     place: "2",
                     fntech: "1",

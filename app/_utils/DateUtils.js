@@ -43,10 +43,8 @@ let DateUtils = {
 /**
  * 将日期格式化为字符串
  *
- * @param {Date}
- *            date
- * @param {String}
- *            pattern
+ * @param date
+ * @param pattern
  */
 DateUtils.formatDate = function (date, pattern) {
     var z = {
@@ -68,8 +66,8 @@ DateUtils.formatDate = function (date, pattern) {
 /**
  * 按pattern的格式时间为字符串，如果不传值，默认“"yyyy-MM-dd HH:mm:ss"”
  *
- * @param {Object}
- *            date
+ * @param date
+ * @param pattern
  */
 DateUtils.format = function (date, pattern) {
     if (!pattern) {

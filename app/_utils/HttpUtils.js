@@ -16,16 +16,22 @@ HttpUtils.get = async function (url, params) {
         let result = await axios.get(path);
         return result.data;
     } catch (e) {
-        throw e.toString();
+        throw e;
     }
 };
 
+/**
+ * Post请求获取数据
+ * @param url
+ * @param params
+ * @return {Promise<*>}
+ */
 HttpUtils.post = async function (url, params) {
     try {
         let result = await axios.post(url, params);
         return result.data;
     } catch (e) {
-        throw e.toString();
+        throw e;
     }
 };
 

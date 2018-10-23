@@ -1,5 +1,3 @@
-const appcfg = require("../../../_config/appcfg");
-const pkname = appcfg.mysql_cfg.pk_name;
 const MysqlUtils = require('../../../_utils/MysqlUtils')
 
 class BaseModel {

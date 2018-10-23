@@ -39,7 +39,7 @@ service.clearFileCache = async function () {
 service.clearDataCache = async function () {
 
     // 缓存期限
-    let cacheExpire = 7;
+    let cacheExpire = 30;
 
     let nowDate = new Date();// 当前日期
     let clearDate = nowDate;
@@ -49,22 +49,22 @@ service.clearDataCache = async function () {
     try {
         // 删除yinhuan_postdata
         let delPostdataSql = `DELETE t 
-FROM
-	yinhuan_postdata t 
-WHERE
-	1 = 1 
-	AND t.posttime < ?`;
+                            FROM
+                                yinhuan_postdata t 
+                            WHERE
+                                1 = 1 
+                                AND t.posttime < ?`;
         let delPostdataParams = [clearDateStr];
 
         let delPostdataResult = await yinhuan_postdataModel.query(delPostdataSql, delPostdataParams);
 
         // 删除yinhuan_rmdanger
         let delRmdangerSql = `DELETE t 
-FROM
-	yinhuan_rmdanger t 
-WHERE
-	1 = 1 
-	AND t.create_time < ?`;
+                            FROM
+                                yinhuan_rmdanger t 
+                            WHERE
+                                1 = 1 
+                                AND t.create_time < ?`;
         let delRmdangerParams = [clearDateStr];
 
         let delRmdangerResult = await yinhuan_rmdangerModel.query(delRmdangerSql, delRmdangerParams);

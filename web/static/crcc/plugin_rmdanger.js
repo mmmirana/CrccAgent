@@ -149,7 +149,7 @@ function delSingleDanger(danger) {
         "troublename": danger.troublename,
         "dangerdesc": danger.dangerdesc,
         "checkinfo": "将发现的安全隐患已整改",
-        "checktime": danger.check_time,
+        "checktime": dateutils.format(new Date(), 'yyyy-MM-dd'),
         "dangerstatus": "2",
         "cp_troubleid": danger.cp_troubleid,
         "pid": "",

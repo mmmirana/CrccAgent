@@ -1,3 +1,6 @@
+const axios = require('axios');
+const fs = require('fs-extra');
+
 function testRandom() {
     let RandomUtils = require('../_utils/RandomUtils');
     console.log(RandomUtils.generateRandom(8, RandomUtils.randomType.number + RandomUtils.randomType.letterUpper));
@@ -30,3 +33,39 @@ async function testEmail() {
 // dirtydata.forEach(function (v, i) {
 //     console.log(dirtydata);
 // });
+
+async function testHttp() {
+    // let url = `http://aqgl.crcc.cn/system/admin/image.jsp?d=${Math.random()}`;
+    // let file = 'E:\\workspace\\Webstrom_workspace\\CrccAgent\\web\\_upload\\test.png';
+    // axios({
+    //     method: 'get',
+    //     url: url,
+    //     responseType: 'stream'
+    // }).then(function (response) {
+    //     response.data.pipe(fs.createWriteStream(file))
+    // });
+
+    // Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+    // Accept-Encoding: gzip, deflate
+    // Accept-Language: zh-CN,zh;q=0.9
+    // Connection: keep-alive
+    // Cookie: JSESSIONID=abcOvvLi9r_Ke6EPeSDyw; td_cookie=2450390046
+    // Host: aqgl.crcc.cn
+    // Referer: http://aqgl.crcc.cn/login.do?reqCode=logout
+    // Upgrade-Insecure-Requests: 1
+    // User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.75 Safari/537.36
+
+    axios({
+        method: 'get',
+        url: 'http://aqgl.crcc.cn/login.do?reqCode=logout',
+        // url: 'http://werewolf.mcourse.cc/json',
+    }).then(function (response) {
+        console.log(response.data);
+        console.log(response.status);
+        console.log(response.statusText);
+        console.log(response.headers);
+        console.log(response.config);
+    })
+}
+
+testHttp();
