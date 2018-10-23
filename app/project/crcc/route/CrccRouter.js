@@ -431,7 +431,7 @@ router.post("/genTodaySubmitData", async function (ctx) {
         let appid = ctx.parameters.appid;
         let number = ctx.parameters.number || 0;
         number = number * 1;
-        let notinUnitValueJson = ctx.parameters.notinUnitValueJson = "[]";
+        let notinUnitValueJson = ctx.parameters.notinUnitValueJson || "[]";
 
         let notinUnitValueArr = JSON.parse(notinUnitValueJson);
 
